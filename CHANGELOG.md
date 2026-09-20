@@ -11,4 +11,6 @@
   that object's own renderers; rows you do not want are deleted by hand.
 - Scene view preview through NDMF, so an edit is visible without building.
 - Errors when two components claim the same renderer and slot.
+- Added from the Inspector's **Add Component > TsiYuki > Yuki Material**, or by right-clicking an
+  object in the Hierarchy and choosing **TsiYuki > Edit Materials**, which also fills the target list.
 - English, Chinese and Japanese UI (TsiYuki > Language).
