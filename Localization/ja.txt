@@ -8,7 +8,7 @@ ui.remove = 削除
 ui.add = 追加
 ui.reset = 戻す
 
-ui.targets = マテリアル
+ui.targets = マテリアルスロット
 ui.targets.help = 各行はレンダラー 1 つのマテリアルスロット 1 つです。元のマテリアルとの差分だけを保存し、元のアセットは変更しません。
 ui.no_targets = マテリアルスロットがありません。
 ui.fill_from_object = このオブジェクトから取得
@@ -27,7 +27,7 @@ ui.reset_all = すべて元に戻す
 ui.reset_all.confirm = このマテリアルの変更をすべて破棄して元に戻しますか？
 ui.reset_property = この項目を戻す
 ui.changed_list = 変更した項目
-ui.edit_material = マテリアル
+ui.edit_material = マテリアル設定
 ui.edit_material.help = シェーダー自身のインスペクターです。ここでの変更は差分として保存され、ビルド時にコピーへ適用されます。
 
 ui.render_queue = レンダーキュー

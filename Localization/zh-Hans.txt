@@ -8,7 +8,7 @@ ui.remove = 删除
 ui.add = 添加
 ui.reset = 还原
 
-ui.targets = 材质
+ui.targets = 材质槽
 ui.targets.help = 每一行是一个渲染器上的一个材质槽。只记录与原材质的差异，原材质本身不会被修改。
 ui.no_targets = 还没有材质槽。
 ui.fill_from_object = 从本物体填充
@@ -27,7 +27,7 @@ ui.reset_all = 全部还原
 ui.reset_all.confirm = 丢弃这个材质上的所有修改，恢复成原始状态？
 ui.reset_property = 还原这一项
 ui.changed_list = 已修改的项
-ui.edit_material = 材质
+ui.edit_material = 材质设置
 ui.edit_material.help = 这就是 shader 自己的面板。你在这里改的任何东西都会被记成差异，构建时应用到一份副本上。
 
 ui.render_queue = 渲染队列
