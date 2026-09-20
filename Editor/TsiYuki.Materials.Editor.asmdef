@@ -1,0 +1,17 @@
+{
+    "name": "TsiYuki.Materials.Editor",
+    "rootNamespace": "TsiYuki.Materials.Editor",
+    "references": [
+        "TsiYuki.Materials",
+        "TsiYuki.Core.Editor",
+        "nadena.dev.ndmf",
+        "nadena.dev.ndmf.runtime",
+        "nadena.dev.ndmf.vrchat",
+        "VRC.SDKBase",
+        "VRC.SDK3A"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false
+}

@@ -1,0 +1,27 @@
+{
+  "name": "moe.tsiyuki.material",
+  "displayName": "Yuki Material",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "Non-destructive material editing for VRChat avatars: change a material through its own shader inspector and have the change applied at build time through NDMF, without duplicating the material asset into your project.",
+  "author": {
+    "name": "TsiYuki",
+    "url": "https://github.com/tsiyukino"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/tsiyukino/YukiMaterial",
+  "changelogUrl": "https://github.com/tsiyukino/YukiMaterial/blob/main/CHANGELOG.md",
+  "vpmDependencies": {
+    "com.vrchat.avatars": ">=3.7.0",
+    "nadena.dev.ndmf": ">=1.11.0 <2.0.0",
+    "moe.tsiyuki.core": ">=0.1.0"
+  },
+  "keywords": [
+    "vrchat",
+    "material",
+    "makeup",
+    "texture",
+    "ndmf",
+    "non-destructive"
+  ]
+}

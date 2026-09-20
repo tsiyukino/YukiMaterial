@@ -1,0 +1,47 @@
+# Yuki Material — 日本語
+
+ui.title = Yuki Material
+ui.not_in_avatar = アバターの中に置いてください（親に VRC Avatar Descriptor が見つかりません）。
+ui.ok = OK
+ui.cancel = キャンセル
+ui.remove = 削除
+ui.add = 追加
+ui.reset = 戻す
+
+ui.targets = マテリアル
+ui.targets.help = 各行はレンダラー 1 つのマテリアルスロット 1 つです。元のマテリアルとの差分だけを保存し、元のアセットは変更しません。
+ui.no_targets = マテリアルスロットがありません。
+ui.fill_from_object = このオブジェクトから取得
+ui.fill_from_object.tip = このオブジェクトのレンダラーのマテリアルスロットをすべて追加します。不要な行は削除してください。
+ui.add_target = マテリアルスロットを追加
+ui.select_object = 選択
+ui.display_name = 名前
+ui.display_name.tip = この一覧に表示されます。空ならマテリアル名を使います。
+ui.slot = スロット {0}
+ui.source = 元
+ui.edited = 変更あり
+ui.unchanged = 変更なし
+ui.changes = {0} 項目を変更
+ui.no_changes = まだ変更がありません。下でマテリアルを編集してください。
+ui.reset_all = すべて元に戻す
+ui.reset_all.confirm = このマテリアルの変更をすべて破棄して元に戻しますか？
+ui.reset_property = この項目を戻す
+ui.changed_list = 変更した項目
+ui.edit_material = マテリアル
+ui.edit_material.help = シェーダー自身のインスペクターです。ここでの変更は差分として保存され、ビルド時にコピーへ適用されます。
+
+ui.render_queue = レンダーキュー
+ui.shader_changed = シェーダーを {0} に変更
+ui.keywords_changed = キーワードを変更
+
+warn.missing_renderer = レンダラーのないマテリアルスロットがあるためスキップしました。
+warn.missing_source = {0}: 元のマテリアルが見つからないためスキップしました。
+warn.slot_out_of_range = {0}: このレンダラーにスロット {1} は存在しないためスキップしました。
+warn.source_changed = {0}: スロットの中身が {1} に変わっています（変更時のマテリアルではありません）。変更は適用しますが結果を確認してください。
+warn.missing_property = {0}: シェーダーに {1} が存在しないため、この変更をスキップしました。
+warn.outside_avatar = {0} はこのアバターの中にありません。
+warn.locked_shader = {0} はロック済みの Poiyomi シェーダーです。テクスチャの変更は有効ですが、数値やトグルの変更はシェーダーに焼き込まれているため効きません。変更するにはマテリアルをアンロックしてください。
+
+conflict.two_components = {0} のスロット {1} が複数の Yuki Material コンポーネントから変更されています（{2}）。
+
+preview.name = Yuki Material

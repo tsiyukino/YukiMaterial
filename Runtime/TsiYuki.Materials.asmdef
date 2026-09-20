@@ -1,0 +1,8 @@
+{
+    "name": "TsiYuki.Materials",
+    "rootNamespace": "TsiYuki.Materials",
+    "references": [
+        "VRC.SDKBase"
+    ],
+    "autoReferenced": true
+}
