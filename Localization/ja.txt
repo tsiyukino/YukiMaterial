@@ -48,6 +48,9 @@ preview.name = Yuki Material
 
 # --- 重ね -----------------------------------------------------------------
 ui.overlays = 重ね
+ui.overlay.drop = ここに画像をドロップ、またはクリックして選択
+ui.overlay.empty = （画像なし）
+ui.overlay.result = 合成結果
 ui.overlays.help = 画像をマテリアル自身のテクスチャに統合します。画像編集ソフトでレイヤーを下地に統合するのと同じで、どのシェーダーでも動きます。
 ui.no_overlays = 重ねはまだありません。下に画像をドロップしてください。
 ui.add_overlay = 画像を追加
@@ -65,7 +68,8 @@ ui.overlay.blend.Multiply = 乗算
 ui.overlay.mask = マスク
 ui.overlay.mask.tip = この画像の白い部分だけに効きます。空なら全体に効きます。
 ui.overlay.tint = 着色
-ui.overlay.tiling = タイリング / オフセット
+ui.overlay.scale = スケール
+ui.overlay.offset = オフセット
 ui.overlay.property = テクスチャプロパティ
 ui.overlay.property.tip = 空にすると、統合先に応じた標準のプロパティを選びます。
 ui.overlay.move_up = 上へ

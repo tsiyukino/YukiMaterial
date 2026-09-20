@@ -3,12 +3,15 @@
 ## [Unreleased] — 0.1.0
 
 ### Added
-- **Overlay mode.** Drop an image and it is merged into the material's own texture at build time, the way
-  you would flatten a PSD layer onto the base — which is what texture and makeup packs normally ask you to
-  do by hand in an image editor. No shader feature is used for the merge, so it works with any shader and
-  survives later conversions. Three controls cover the common case (image, where it goes, opacity); blend
-  mode, mask, tint, tiling and an explicit texture property sit behind Advanced, and every one of them
-  defaults to changing nothing.
+- **Overlay mode.** Drop images onto the drop area and each is merged into the material's own texture at
+  build time, the way you would flatten a PSD layer onto the base — which is what texture and makeup packs
+  normally ask you to do by hand in an image editor. No shader feature is used for the merge, so it works
+  with any shader and survives later conversions. Each layer shows its image and needs only two settings
+  (where it goes, opacity); blend mode, mask, tint, scale, offset and an explicit texture property sit
+  behind Advanced, and every one of them defaults to changing nothing.
+- The composited result is shown in the inspector, per target, so the effect is visible without hunting for
+  it in the Scene view. The shader's own inspector is folded away by default, since it is the advanced path
+  and is hundreds of rows tall.
 - Where a dropped image goes is guessed from the image: marks on a black field become a glow layer added to
   emission, anything else is merged into the base colour. A glow layer switches emission on if the material
   had it off, and says so.

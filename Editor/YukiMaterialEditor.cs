@@ -33,6 +33,12 @@ namespace TsiYuki.Materials.Editor
         MaterialEditor _panel;
         string _lastJson = "";
 
+        // Composites for the inspector's own preview. Small, uncompressed, and
+        // cached by the baker, so redrawing costs nothing after the first bake.
+        TextureBaker _previewBaker;
+        int _pickerId;
+        bool _panelOpen;
+
         static readonly PropertyInfo FirstInspected =
             typeof(UnityEditor.Editor).GetProperty("firstInspectedEditor", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -43,6 +49,7 @@ namespace TsiYuki.Materials.Editor
             if (_panel != null) DestroyImmediate(_panel);
             if (_work != null) DestroyImmediate(_work);
             if (_reference != null) DestroyImmediate(_reference);
+            if (_previewBaker != null) { _previewBaker.Dispose(); _previewBaker = null; }
             _panel = null;
             _work = null;
             _reference = null;
@@ -222,6 +229,9 @@ namespace TsiYuki.Materials.Editor
                     EditorGUIUtility.PingObject(Selection.activeObject = target.renderer.gameObject);
             }
 
+            DrawOverlays(config, target);
+
+            EditorGUILayout.Space(6);
             var edit = target.First != null ? target.First.edit : null;
             if (edit != null && !edit.IsEmpty)
             {
@@ -260,21 +270,22 @@ namespace TsiYuki.Materials.Editor
             }
 
             EditorGUILayout.Space(6);
-            DrawOverlays(config, target);
 
-            EditorGUILayout.Space(6);
-            YukiGUI.Section(L["ui.edit_material"]);
-            EditorGUILayout.LabelField(L["ui.edit_material.help"], YukiGUI.WrapMini);
-            EditorGUILayout.Space(4);
-
-            // The shader's own inspector, drawn on the working copy.
-            try
+            // The shader's own inspector is hundreds of rows tall and is the
+            // advanced path, so it stays folded away until it is wanted.
+            _panelOpen = EditorGUILayout.Foldout(_panelOpen, L["ui.edit_material"], true, EditorStyles.foldoutHeader);
+            if (_panelOpen)
             {
-                _panel.OnInspectorGUI();
-            }
-            catch (System.Exception e)
-            {
-                EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                EditorGUILayout.LabelField(L["ui.edit_material.help"], YukiGUI.WrapMini);
+                EditorGUILayout.Space(4);
+                try
+                {
+                    _panel.OnInspectorGUI();
+                }
+                catch (System.Exception e)
+                {
+                    EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                }
             }
 
             if (Event.current.type == EventType.Repaint) Capture();
@@ -283,6 +294,8 @@ namespace TsiYuki.Materials.Editor
         // ----------------------------------------------------------- overlays
 
         readonly HashSet<string> _openAdvanced = new HashSet<string>();
+
+        TextureBaker PreviewBaker => _previewBaker ?? (_previewBaker = new TextureBaker(compress: false, maxSize: 256));
 
         void DrawOverlays(YukiMaterial config, MaterialTarget target)
         {
@@ -294,112 +307,195 @@ namespace TsiYuki.Materials.Editor
             EditorGUILayout.LabelField(L["ui.overlays.help"], YukiGUI.WrapMini);
             EditorGUILayout.Space(2);
 
-            if (overlays.Count == 0)
-            {
-                EditorGUILayout.HelpBox(L["ui.no_overlays"], MessageType.Info);
-            }
-            else
-            {
-                if (overlays.Count > 1)
-                    EditorGUILayout.LabelField(L["ui.overlay.order"], EditorStyles.miniLabel);
+            DrawResult(variant.edit);
+            DrawDropZone(config, target);
 
-                OverlayLayer remove = null;
-                int move = 0;
-                OverlayLayer moving = null;
+            if (overlays.Count == 0) return;
+            if (overlays.Count > 1) EditorGUILayout.LabelField(L["ui.overlay.order"], EditorStyles.miniLabel);
 
-                foreach (var layer in overlays.ToList())
+            OverlayLayer remove = null, moving = null;
+            int move = 0;
+
+            foreach (var layer in overlays.ToList())
+            {
+                if (layer == null) continue;
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
-                    if (layer == null) continue;
-                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                    using (new EditorGUILayout.HorizontalScope())
                     {
-                        // --- the three things that matter ---
-                        using (new EditorGUILayout.HorizontalScope())
+                        Thumbnail(layer.texture, 52);
+
+                        using (new EditorGUILayout.VerticalScope())
                         {
-                            EditorGUI.BeginChangeCheck();
-                            var enabled = EditorGUILayout.Toggle(layer.enabled, GUILayout.Width(16));
-                            var texture = (Texture)EditorGUILayout.ObjectField(L["ui.overlay.image"], layer.texture, typeof(Texture), false);
-                            if (EditorGUI.EndChangeCheck())
+                            using (new EditorGUILayout.HorizontalScope())
                             {
-                                UndoEdit.Begin(config, "Edit overlay");
-                                layer.enabled = enabled;
-                                // A freshly dropped image guesses where it goes.
-                                if (texture != layer.texture && texture != null && layer.texture == null)
+                                EditorGUI.BeginChangeCheck();
+                                var enabled = EditorGUILayout.ToggleLeft(
+                                    layer.texture != null ? layer.texture.name : L["ui.overlay.empty"],
+                                    layer.enabled, EditorStyles.boldLabel);
+                                if (EditorGUI.EndChangeCheck())
                                 {
-                                    OverlayTarget guessedTarget;
-                                    OverlayBlend guessedBlend;
-                                    OverlayBaker.Guess(texture, out guessedTarget, out guessedBlend);
-                                    layer.target = guessedTarget;
-                                    layer.blend = guessedBlend;
+                                    UndoEdit.Begin(config, "Toggle overlay");
+                                    layer.enabled = enabled;
+                                    UndoEdit.End(config);
+                                    OnOverlayChanged();
                                 }
-                                layer.texture = texture;
-                                UndoEdit.End(config);
-                                OnOverlayChanged();
+                                if (overlays.Count > 1)
+                                {
+                                    using (new EditorGUI.DisabledScope(overlays.IndexOf(layer) == 0))
+                                        if (GUILayout.Button(new GUIContent("↑", L["ui.overlay.move_up"]), EditorStyles.miniButton, GUILayout.Width(22))) { moving = layer; move = -1; }
+                                    using (new EditorGUI.DisabledScope(overlays.IndexOf(layer) == overlays.Count - 1))
+                                        if (GUILayout.Button(new GUIContent("↓", L["ui.overlay.move_down"]), EditorStyles.miniButton, GUILayout.Width(22))) { moving = layer; move = 1; }
+                                }
+                                if (GUILayout.Button("×", GUILayout.Width(22))) remove = layer;
                             }
-                            if (overlays.Count > 1)
-                            {
-                                using (new EditorGUI.DisabledScope(overlays.IndexOf(layer) == 0))
-                                    if (GUILayout.Button(new GUIContent("\u2191", L["ui.overlay.move_up"]), EditorStyles.miniButton, GUILayout.Width(22))) { moving = layer; move = -1; }
-                                using (new EditorGUI.DisabledScope(overlays.IndexOf(layer) == overlays.Count - 1))
-                                    if (GUILayout.Button(new GUIContent("\u2193", L["ui.overlay.move_down"]), EditorStyles.miniButton, GUILayout.Width(22))) { moving = layer; move = 1; }
-                            }
-                            if (GUILayout.Button("\u00d7", GUILayout.Width(22))) remove = layer;
-                        }
 
-                        EditorGUI.BeginChangeCheck();
-                        var targetKind = (OverlayTarget)EditorGUILayout.Popup(L["ui.overlay.target"], (int)layer.target,
-                            System.Enum.GetNames(typeof(OverlayTarget)).Select(n => L["ui.overlay.target." + n]).ToArray());
-                        var opacity = EditorGUILayout.Slider(L["ui.overlay.opacity"], layer.opacity, 0f, 1f);
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            UndoEdit.Begin(config, "Edit overlay");
-                            layer.target = targetKind;
-                            layer.opacity = opacity;
-                            UndoEdit.End(config);
-                            OnOverlayChanged();
-                        }
-
-                        // --- everything else, folded away ---
-                        bool open = _openAdvanced.Contains(layer.id);
-                        var now = EditorGUILayout.Foldout(open, L["ui.overlay.advanced"], true);
-                        if (now != open) { if (now) _openAdvanced.Add(layer.id); else _openAdvanced.Remove(layer.id); }
-                        if (!now) continue;
-
-                        using (new EditorGUI.IndentLevelScope())
-                        {
                             EditorGUI.BeginChangeCheck();
-                            var blend = (OverlayBlend)EditorGUILayout.Popup(L["ui.overlay.blend"], (int)layer.blend,
-                                System.Enum.GetNames(typeof(OverlayBlend)).Select(n => L["ui.overlay.blend." + n]).ToArray());
-                            var mask = (Texture)EditorGUILayout.ObjectField(new GUIContent(L["ui.overlay.mask"], L["ui.overlay.mask.tip"]), layer.mask, typeof(Texture), false);
-                            var tint = EditorGUILayout.ColorField(L["ui.overlay.tint"], layer.tint);
-                            var scale = EditorGUILayout.Vector2Field(L["ui.overlay.tiling"], layer.scale);
-                            var offset = EditorGUILayout.Vector2Field(" ", layer.offset);
-                            var property = EditorGUILayout.TextField(new GUIContent(L["ui.overlay.property"], L["ui.overlay.property.tip"]), layer.property);
+                            var targetKind = (OverlayTarget)EditorGUILayout.Popup(L["ui.overlay.target"], (int)layer.target,
+                                System.Enum.GetNames(typeof(OverlayTarget)).Select(n => L["ui.overlay.target." + n]).ToArray());
+                            var opacity = EditorGUILayout.Slider(L["ui.overlay.opacity"], layer.opacity, 0f, 1f);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 UndoEdit.Begin(config, "Edit overlay");
-                                layer.blend = blend;
-                                layer.mask = mask;
-                                layer.tint = tint;
-                                layer.scale = scale;
-                                layer.offset = offset;
-                                layer.property = property;
+                                layer.target = targetKind;
+                                layer.opacity = opacity;
                                 UndoEdit.End(config);
                                 OnOverlayChanged();
                             }
                         }
                     }
+
+                    bool open = _openAdvanced.Contains(layer.id);
+                    var now = EditorGUILayout.Foldout(open, L["ui.overlay.advanced"], true);
+                    if (now != open) { if (now) _openAdvanced.Add(layer.id); else _openAdvanced.Remove(layer.id); }
+                    if (!now) continue;
+
+                    using (new EditorGUI.IndentLevelScope())
+                    {
+                        EditorGUI.BeginChangeCheck();
+                        var texture = (Texture)EditorGUILayout.ObjectField(L["ui.overlay.image"], layer.texture, typeof(Texture), false);
+                        var blend = (OverlayBlend)EditorGUILayout.Popup(L["ui.overlay.blend"], (int)layer.blend,
+                            System.Enum.GetNames(typeof(OverlayBlend)).Select(n => L["ui.overlay.blend." + n]).ToArray());
+                        var mask = (Texture)EditorGUILayout.ObjectField(new GUIContent(L["ui.overlay.mask"], L["ui.overlay.mask.tip"]), layer.mask, typeof(Texture), false);
+                        var tint = EditorGUILayout.ColorField(L["ui.overlay.tint"], layer.tint);
+                        var scale = EditorGUILayout.Vector2Field(L["ui.overlay.scale"], layer.scale);
+                        var offset = EditorGUILayout.Vector2Field(L["ui.overlay.offset"], layer.offset);
+                        var property = EditorGUILayout.TextField(new GUIContent(L["ui.overlay.property"], L["ui.overlay.property.tip"]), layer.property);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            UndoEdit.Begin(config, "Edit overlay");
+                            layer.texture = texture;
+                            layer.blend = blend;
+                            layer.mask = mask;
+                            layer.tint = tint;
+                            layer.scale = scale;
+                            layer.offset = offset;
+                            layer.property = property;
+                            UndoEdit.End(config);
+                            OnOverlayChanged();
+                        }
+                    }
                 }
-
-                if (moving != null) { MaterialActions.MoveOverlay(config, target, moving, move); OnOverlayChanged(); GUIUtility.ExitGUI(); }
-                if (remove != null) { _openAdvanced.Remove(remove.id); MaterialActions.RemoveOverlay(config, target, remove); OnOverlayChanged(); GUIUtility.ExitGUI(); }
             }
 
-            if (GUILayout.Button(L["ui.add_overlay"], GUILayout.Width(150)))
+            if (moving != null) { MaterialActions.MoveOverlay(config, target, moving, move); OnOverlayChanged(); GUIUtility.ExitGUI(); }
+            if (remove != null) { _openAdvanced.Remove(remove.id); MaterialActions.RemoveOverlay(config, target, remove); OnOverlayChanged(); GUIUtility.ExitGUI(); }
+        }
+
+        /// <summary>What the layers add up to, so the result is visible here
+        /// rather than only in the Scene view.</summary>
+        void DrawResult(MaterialEdit edit)
+        {
+            if (_work == null || !edit.HasOverlays) return;
+
+            var targets = new List<OverlayTarget>();
+            foreach (OverlayTarget t in System.Enum.GetValues(typeof(OverlayTarget)))
+                if (OverlayBaker.Targets(_work, edit, t)) targets.Add(t);
+            if (targets.Count == 0) return;
+
+            using (new EditorGUILayout.HorizontalScope())
             {
-                MaterialActions.AddOverlay(config, target);
-                OnOverlayChanged();
-                GUIUtility.ExitGUI();
+                foreach (var t in targets)
+                {
+                    Texture composite = null;
+                    try { composite = OverlayBaker.Composite(_work, edit, PreviewBaker, t); }
+                    catch { /* a broken layer must not take the inspector down */ }
+                    using (new EditorGUILayout.VerticalScope(GUILayout.Width(96)))
+                    {
+                        Thumbnail(composite, 88);
+                        GUILayout.Label(L["ui.overlay.target." + t], EditorStyles.miniLabel);
+                    }
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.Label(L["ui.overlay.result"], YukiGUI.WrapMini);
             }
+            EditorGUILayout.Space(2);
+        }
+
+        void Thumbnail(Texture texture, float size)
+        {
+            var rect = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
+            EditorGUI.DrawRect(rect, new Color(0f, 0f, 0f, 0.25f));
+            if (texture != null) GUI.DrawTexture(rect, texture, ScaleMode.ScaleToFit, true);
+        }
+
+        /// <summary>Drop images here; one layer per image, settings guessed.</summary>
+        void DrawDropZone(YukiMaterial config, MaterialTarget target)
+        {
+            var rect = GUILayoutUtility.GetRect(0, 54, GUILayout.ExpandWidth(true));
+            var hover = rect.Contains(Event.current.mousePosition);
+            var dragging = DragAndDrop.objectReferences.Any(o => o is Texture);
+
+            EditorGUI.DrawRect(rect, hover && dragging ? new Color(0.3f, 0.5f, 0.8f, 0.35f) : new Color(0f, 0f, 0f, 0.15f));
+            var style = new GUIStyle(EditorStyles.centeredGreyMiniLabel) { wordWrap = true };
+            GUI.Label(rect, L["ui.overlay.drop"], style);
+
+            var e = Event.current;
+            if (hover)
+            {
+                if (e.type == EventType.DragUpdated && dragging)
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    e.Use();
+                }
+                else if (e.type == EventType.DragPerform && dragging)
+                {
+                    DragAndDrop.AcceptDrag();
+                    foreach (var o in DragAndDrop.objectReferences.OfType<Texture>())
+                        AddLayer(config, target, o);
+                    e.Use();
+                    GUIUtility.ExitGUI();
+                }
+                else if (e.type == EventType.MouseDown && e.button == 0)
+                {
+                    _pickerId = GUIUtility.GetControlID(FocusType.Passive);
+                    EditorGUIUtility.ShowObjectPicker<Texture>(null, false, "", _pickerId);
+                    e.Use();
+                }
+            }
+
+            if (e.type == EventType.ExecuteCommand && e.commandName == "ObjectSelectorClosed" &&
+                EditorGUIUtility.GetObjectPickerControlID() == _pickerId && _pickerId != 0)
+            {
+                var picked = EditorGUIUtility.GetObjectPickerObject() as Texture;
+                _pickerId = 0;
+                if (picked != null) { AddLayer(config, target, picked); e.Use(); GUIUtility.ExitGUI(); }
+            }
+        }
+
+        void AddLayer(YukiMaterial config, MaterialTarget target, Texture texture)
+        {
+            var layer = MaterialActions.AddOverlay(config, target);
+            if (layer == null) return;
+            OverlayTarget guessedTarget;
+            OverlayBlend guessedBlend;
+            OverlayBaker.Guess(texture, out guessedTarget, out guessedBlend);
+            UndoEdit.Begin(config, "Add overlay");
+            layer.texture = texture;
+            layer.target = guessedTarget;
+            layer.blend = guessedBlend;
+            UndoEdit.End(config);
+            OnOverlayChanged();
         }
 
         /// <summary>

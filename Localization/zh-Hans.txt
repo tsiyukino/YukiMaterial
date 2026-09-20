@@ -48,6 +48,9 @@ preview.name = Yuki Material
 
 # --- 叠加 -----------------------------------------------------------------
 ui.overlays = 叠加
+ui.overlay.drop = 把图片拖到这里，或点击选择
+ui.overlay.empty = （还没有图片）
+ui.overlay.result = 合成结果
 ui.overlays.help = 把图片合并进材质自己的贴图，相当于替你在图像软件里把图层合并到底图上。任何 shader 都适用。
 ui.no_overlays = 还没有叠加。把图片拖到下面。
 ui.add_overlay = 添加图片
@@ -65,7 +68,8 @@ ui.overlay.blend.Multiply = 正片叠底
 ui.overlay.mask = 遮罩
 ui.overlay.mask.tip = 只在这张图的白色部分生效。留空表示全图生效。
 ui.overlay.tint = 着色
-ui.overlay.tiling = 缩放 / 偏移
+ui.overlay.scale = 缩放
+ui.overlay.offset = 偏移
 ui.overlay.property = 贴图属性
 ui.overlay.property.tip = 留空则按上面选的目标自动挑选常用属性。
 ui.overlay.move_up = 上移

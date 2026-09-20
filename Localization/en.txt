@@ -48,6 +48,9 @@ preview.name = Yuki Material
 
 # --- overlays -------------------------------------------------------------
 ui.overlays = Overlays
+ui.overlay.drop = Drop images here, or click to pick one
+ui.overlay.empty = (no image)
+ui.overlay.result = What the layers add up to
 ui.overlays.help = Images merged into the material's own textures, the way you would flatten a layer onto the base in an image editor. Works with any shader.
 ui.no_overlays = No overlays. Drop an image below.
 ui.add_overlay = Add an image
@@ -65,7 +68,8 @@ ui.overlay.blend.Multiply = Multiply
 ui.overlay.mask = Mask
 ui.overlay.mask.tip = Limits the layer to the white parts of this image. Empty means everywhere.
 ui.overlay.tint = Tint
-ui.overlay.tiling = Tiling / offset
+ui.overlay.scale = Scale
+ui.overlay.offset = Offset
 ui.overlay.property = Texture property
 ui.overlay.property.tip = Leave empty to pick the usual property for the chosen target.
 ui.overlay.move_up = Move up
