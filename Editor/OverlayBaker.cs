@@ -72,6 +72,14 @@ namespace TsiYuki.Materials.Editor
                     Name = label + " " + entry.Key.TrimStart('_'),
                     MainTexture = material.GetTexture(entry.Key),
                 };
+
+                // With no texture to merge into, the compositor starts from
+                // white. That is the neutral for a base colour, but for a glow
+                // map it means "everything glows", and an additive layer then
+                // cannot bring it back down. Emission starts from black
+                // instead, so only what the layer draws lights up.
+                if (spec.MainTexture == null && entry.Value[0].target == OverlayTarget.Emission)
+                    spec.Color = new Color(0f, 0f, 0f, 1f);
                 var scale = material.GetTextureScale(entry.Key);
                 var offset = material.GetTextureOffset(entry.Key);
 
