@@ -45,3 +45,32 @@ warn.locked_shader = {0} 使用了锁定的 Poiyomi shader。贴图修改有效�
 conflict.two_components = {0} 的槽位 {1} 被多个 Yuki Material 组件修改（{2}）。
 
 preview.name = Yuki Material
+
+# --- 叠加 -----------------------------------------------------------------
+ui.overlays = 叠加
+ui.overlays.help = 把图片合并进材质自己的贴图，相当于替你在图像软件里把图层合并到底图上。任何 shader 都适用。
+ui.no_overlays = 还没有叠加。把图片拖到下面。
+ui.add_overlay = 添加图片
+ui.overlay.image = 图片
+ui.overlay.target = 叠加到
+ui.overlay.target.BaseColor = 底色
+ui.overlay.target.Emission = 发光
+ui.overlay.opacity = 不透明度
+ui.overlay.advanced = 高级设置
+ui.overlay.blend = 混合模式
+ui.overlay.blend.Normal = 正常
+ui.overlay.blend.Add = 相加
+ui.overlay.blend.Screen = 滤色
+ui.overlay.blend.Multiply = 正片叠底
+ui.overlay.mask = 遮罩
+ui.overlay.mask.tip = 只在这张图的白色部分生效。留空表示全图生效。
+ui.overlay.tint = 着色
+ui.overlay.tiling = 缩放 / 偏移
+ui.overlay.property = 贴图属性
+ui.overlay.property.tip = 留空则按上面选的目标自动挑选常用属性。
+ui.overlay.move_up = 上移
+ui.overlay.move_down = 下移
+ui.overlay.order = 图层按从上到下的顺序合并。
+warn.no_texture_slot = {0}：这个 shader 没有可以合并 {1} 图层的贴图属性，该图层已跳过。
+warn.uv_mismatch = {0}：{1} 和要合并进去的贴图形状不一致。叠加图是照着特定 UV 画的，请确认效果。
+info.emission_enabled = {0}：发光原本是关的，为了让发光图层可见已打开 {1}。

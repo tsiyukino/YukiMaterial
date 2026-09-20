@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using TsiYuki.Core.Editor;
 using UnityEngine;
 
 [assembly: ExportsPlugin(typeof(TsiYuki.Materials.Editor.MaterialPlugin))]
@@ -49,6 +50,10 @@ namespace TsiYuki.Materials.Editor
             var patches = new Dictionary<Renderer, Dictionary<int, UnityEngine.Material>>();
             int count = 0;
 
+            // Textures composited here are handed to NDMF, so the baker must not
+            // own them; it is deliberately never disposed.
+            var baker = new TextureBaker(compress: true);
+
             foreach (var target in set.AllTargets)
             {
                 if (!claimed.Add(target.Key)) continue;
@@ -61,6 +66,10 @@ namespace TsiYuki.Materials.Editor
 
                 foreach (var name in missing.Distinct())
                     Report(ErrorSeverity.NonFatal, "warn.missing_property", target.Original, new object[] { target.DisplayName, name });
+
+                // Overlays go on last, over whatever the property differences left.
+                OverlayBaker.Apply(patched, target.Edit, baker, target.DisplayName,
+                    (key, args) => Report(key.StartsWith("info.") ? ErrorSeverity.Information : ErrorSeverity.NonFatal, key, target.Original, args));
 
                 if (!patches.TryGetValue(target.Renderer, out var slots))
                     patches[target.Renderer] = slots = new Dictionary<int, UnityEngine.Material>();
@@ -76,6 +85,9 @@ namespace TsiYuki.Materials.Editor
                     if (slot.Key >= 0 && slot.Key < materials.Length) materials[slot.Key] = slot.Value;
                 pair.Key.sharedMaterials = materials;
             }
+
+            foreach (var texture in baker.Generated)
+                if (texture != null) ctx.AssetSaver.SaveAsset(texture);
 
             foreach (var config in configs)
                 if (config != null) Object.DestroyImmediate(config);

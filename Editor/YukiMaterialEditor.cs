@@ -91,6 +91,9 @@ namespace TsiYuki.Materials.Editor
             }
 
             var edit = MaterialDiff.Extract(_work, _base, _reference);
+            // Overlays are authored in this inspector, not discovered by diffing
+            // the shader panel, so carry them across or every repaint drops them.
+            edit.overlays = variant.edit.overlays;
             var json = JsonUtility.ToJson(edit);
             if (json == _lastJson) return;
 
@@ -257,6 +260,9 @@ namespace TsiYuki.Materials.Editor
             }
 
             EditorGUILayout.Space(6);
+            DrawOverlays(config, target);
+
+            EditorGUILayout.Space(6);
             YukiGUI.Section(L["ui.edit_material"]);
             EditorGUILayout.LabelField(L["ui.edit_material.help"], YukiGUI.WrapMini);
             EditorGUILayout.Space(4);
@@ -272,6 +278,137 @@ namespace TsiYuki.Materials.Editor
             }
 
             if (Event.current.type == EventType.Repaint) Capture();
+        }
+
+        // ----------------------------------------------------------- overlays
+
+        readonly HashSet<string> _openAdvanced = new HashSet<string>();
+
+        void DrawOverlays(YukiMaterial config, MaterialTarget target)
+        {
+            var variant = target.First;
+            if (variant == null) return;
+            var overlays = variant.edit.overlays;
+
+            YukiGUI.Section(L["ui.overlays"]);
+            EditorGUILayout.LabelField(L["ui.overlays.help"], YukiGUI.WrapMini);
+            EditorGUILayout.Space(2);
+
+            if (overlays.Count == 0)
+            {
+                EditorGUILayout.HelpBox(L["ui.no_overlays"], MessageType.Info);
+            }
+            else
+            {
+                if (overlays.Count > 1)
+                    EditorGUILayout.LabelField(L["ui.overlay.order"], EditorStyles.miniLabel);
+
+                OverlayLayer remove = null;
+                int move = 0;
+                OverlayLayer moving = null;
+
+                foreach (var layer in overlays.ToList())
+                {
+                    if (layer == null) continue;
+                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                    {
+                        // --- the three things that matter ---
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUI.BeginChangeCheck();
+                            var enabled = EditorGUILayout.Toggle(layer.enabled, GUILayout.Width(16));
+                            var texture = (Texture)EditorGUILayout.ObjectField(L["ui.overlay.image"], layer.texture, typeof(Texture), false);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                UndoEdit.Begin(config, "Edit overlay");
+                                layer.enabled = enabled;
+                                // A freshly dropped image guesses where it goes.
+                                if (texture != layer.texture && texture != null && layer.texture == null)
+                                {
+                                    OverlayTarget guessedTarget;
+                                    OverlayBlend guessedBlend;
+                                    OverlayBaker.Guess(texture, out guessedTarget, out guessedBlend);
+                                    layer.target = guessedTarget;
+                                    layer.blend = guessedBlend;
+                                }
+                                layer.texture = texture;
+                                UndoEdit.End(config);
+                                OnOverlayChanged();
+                            }
+                            if (overlays.Count > 1)
+                            {
+                                using (new EditorGUI.DisabledScope(overlays.IndexOf(layer) == 0))
+                                    if (GUILayout.Button(new GUIContent("\u2191", L["ui.overlay.move_up"]), EditorStyles.miniButton, GUILayout.Width(22))) { moving = layer; move = -1; }
+                                using (new EditorGUI.DisabledScope(overlays.IndexOf(layer) == overlays.Count - 1))
+                                    if (GUILayout.Button(new GUIContent("\u2193", L["ui.overlay.move_down"]), EditorStyles.miniButton, GUILayout.Width(22))) { moving = layer; move = 1; }
+                            }
+                            if (GUILayout.Button("\u00d7", GUILayout.Width(22))) remove = layer;
+                        }
+
+                        EditorGUI.BeginChangeCheck();
+                        var targetKind = (OverlayTarget)EditorGUILayout.Popup(L["ui.overlay.target"], (int)layer.target,
+                            System.Enum.GetNames(typeof(OverlayTarget)).Select(n => L["ui.overlay.target." + n]).ToArray());
+                        var opacity = EditorGUILayout.Slider(L["ui.overlay.opacity"], layer.opacity, 0f, 1f);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            UndoEdit.Begin(config, "Edit overlay");
+                            layer.target = targetKind;
+                            layer.opacity = opacity;
+                            UndoEdit.End(config);
+                            OnOverlayChanged();
+                        }
+
+                        // --- everything else, folded away ---
+                        bool open = _openAdvanced.Contains(layer.id);
+                        var now = EditorGUILayout.Foldout(open, L["ui.overlay.advanced"], true);
+                        if (now != open) { if (now) _openAdvanced.Add(layer.id); else _openAdvanced.Remove(layer.id); }
+                        if (!now) continue;
+
+                        using (new EditorGUI.IndentLevelScope())
+                        {
+                            EditorGUI.BeginChangeCheck();
+                            var blend = (OverlayBlend)EditorGUILayout.Popup(L["ui.overlay.blend"], (int)layer.blend,
+                                System.Enum.GetNames(typeof(OverlayBlend)).Select(n => L["ui.overlay.blend." + n]).ToArray());
+                            var mask = (Texture)EditorGUILayout.ObjectField(new GUIContent(L["ui.overlay.mask"], L["ui.overlay.mask.tip"]), layer.mask, typeof(Texture), false);
+                            var tint = EditorGUILayout.ColorField(L["ui.overlay.tint"], layer.tint);
+                            var scale = EditorGUILayout.Vector2Field(L["ui.overlay.tiling"], layer.scale);
+                            var offset = EditorGUILayout.Vector2Field(" ", layer.offset);
+                            var property = EditorGUILayout.TextField(new GUIContent(L["ui.overlay.property"], L["ui.overlay.property.tip"]), layer.property);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                UndoEdit.Begin(config, "Edit overlay");
+                                layer.blend = blend;
+                                layer.mask = mask;
+                                layer.tint = tint;
+                                layer.scale = scale;
+                                layer.offset = offset;
+                                layer.property = property;
+                                UndoEdit.End(config);
+                                OnOverlayChanged();
+                            }
+                        }
+                    }
+                }
+
+                if (moving != null) { MaterialActions.MoveOverlay(config, target, moving, move); OnOverlayChanged(); GUIUtility.ExitGUI(); }
+                if (remove != null) { _openAdvanced.Remove(remove.id); MaterialActions.RemoveOverlay(config, target, remove); OnOverlayChanged(); GUIUtility.ExitGUI(); }
+            }
+
+            if (GUILayout.Button(L["ui.add_overlay"], GUILayout.Width(150)))
+            {
+                MaterialActions.AddOverlay(config, target);
+                OnOverlayChanged();
+                GUIUtility.ExitGUI();
+            }
+        }
+
+        /// <summary>
+        /// The overlay list is not part of what Capture() diffs, so the snapshot
+        /// it compares against has to be refreshed by hand after an edit here.
+        /// </summary>
+        void OnOverlayChanged()
+        {
+            if (_bound != null && _bound.First != null) _lastJson = JsonUtility.ToJson(_bound.First.edit);
         }
     }
 }

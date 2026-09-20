@@ -45,3 +45,32 @@ warn.locked_shader = {0} uses a locked Poiyomi shader. Texture changes work; num
 conflict.two_components = {0} slot {1} is changed by more than one Yuki Material component ({2}).
 
 preview.name = Yuki Material
+
+# --- overlays -------------------------------------------------------------
+ui.overlays = Overlays
+ui.overlays.help = Images merged into the material's own textures, the way you would flatten a layer onto the base in an image editor. Works with any shader.
+ui.no_overlays = No overlays. Drop an image below.
+ui.add_overlay = Add an image
+ui.overlay.image = Image
+ui.overlay.target = Merge into
+ui.overlay.target.BaseColor = Base colour
+ui.overlay.target.Emission = Glow
+ui.overlay.opacity = Opacity
+ui.overlay.advanced = Advanced
+ui.overlay.blend = Blend
+ui.overlay.blend.Normal = Normal
+ui.overlay.blend.Add = Add
+ui.overlay.blend.Screen = Screen
+ui.overlay.blend.Multiply = Multiply
+ui.overlay.mask = Mask
+ui.overlay.mask.tip = Limits the layer to the white parts of this image. Empty means everywhere.
+ui.overlay.tint = Tint
+ui.overlay.tiling = Tiling / offset
+ui.overlay.property = Texture property
+ui.overlay.property.tip = Leave empty to pick the usual property for the chosen target.
+ui.overlay.move_up = Move up
+ui.overlay.move_down = Move down
+ui.overlay.order = Layers are merged top to bottom.
+warn.no_texture_slot = {0}: this shader has no texture to merge a {1} layer into, so that layer is skipped.
+warn.uv_mismatch = {0}: {1} has a different shape from the texture it is merged into. Overlays are drawn for one UV layout, so check the result.
+info.emission_enabled = {0}: glow was switched off, so {1} was turned on for the glow layer to show.

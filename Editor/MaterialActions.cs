@@ -76,6 +76,41 @@ namespace TsiYuki.Materials.Editor
             UndoEdit.End(config);
         }
 
+        public static OverlayLayer AddOverlay(YukiMaterial config, MaterialTarget target)
+        {
+            var variant = target.First;
+            if (variant == null) return null;
+            UndoEdit.Begin(config, "Add overlay");
+            var layer = new OverlayLayer { id = YukiMaterial.NewId() };
+            variant.edit.overlays.Add(layer);
+            UndoEdit.End(config);
+            return layer;
+        }
+
+        public static void RemoveOverlay(YukiMaterial config, MaterialTarget target, OverlayLayer layer)
+        {
+            var variant = target.First;
+            if (variant == null) return;
+            UndoEdit.Begin(config, "Remove overlay");
+            variant.edit.overlays.Remove(layer);
+            UndoEdit.End(config);
+        }
+
+        /// <summary>Moves a layer in the merge order; later layers go on top.</summary>
+        public static void MoveOverlay(YukiMaterial config, MaterialTarget target, OverlayLayer layer, int delta)
+        {
+            var variant = target.First;
+            if (variant == null) return;
+            var list = variant.edit.overlays;
+            int from = list.IndexOf(layer);
+            int to = from + delta;
+            if (from < 0 || to < 0 || to >= list.Count) return;
+            UndoEdit.Begin(config, "Reorder overlays");
+            list.RemoveAt(from);
+            list.Insert(to, layer);
+            UndoEdit.End(config);
+        }
+
         static MaterialTarget NewTarget(Renderer renderer, int slot, UnityEngine.Material material)
         {
             var target = new MaterialTarget

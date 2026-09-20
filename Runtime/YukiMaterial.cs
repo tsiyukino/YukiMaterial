@@ -29,6 +29,54 @@ namespace TsiYuki.Materials
         public Vector4 textureScaleOffset = new Vector4(1, 1, 0, 0);
     }
 
+    /// <summary>Where an overlay is composited.</summary>
+    public enum OverlayTarget
+    {
+        BaseColor = 0,
+        Emission = 1,
+    }
+
+    /// <summary>lilBlendColor's modes, used by the compositor.</summary>
+    public enum OverlayBlend
+    {
+        Normal = 0,
+        Add = 1,
+        Screen = 2,
+        Multiply = 3,
+    }
+
+    /// <summary>
+    /// One image merged into a texture of the material, the way you would merge
+    /// a layer onto the base in an image editor.
+    ///
+    /// Everything here is relative: every default means "change nothing", so
+    /// opening the advanced settings and touching something can never silently
+    /// discard what the material already had.
+    /// </summary>
+    [Serializable]
+    public class OverlayLayer
+    {
+        public string id = "";
+        public bool enabled = true;
+        public string displayName = "";
+
+        public Texture texture;
+        public OverlayTarget target = OverlayTarget.BaseColor;
+        [Range(0f, 1f)] public float opacity = 1f;
+
+        // ---- advanced; the defaults are all neutral ----
+        public OverlayBlend blend = OverlayBlend.Normal;
+        // Limits the layer to the white parts of this image. Null = everywhere.
+        public Texture mask;
+        public Color tint = Color.white;
+        public Vector2 scale = Vector2.one;
+        public Vector2 offset = Vector2.zero;
+        // Empty resolves from `target` against the material's shader.
+        public string property = "";
+
+        public bool IsActive => enabled && texture != null && opacity > 0.001f;
+    }
+
     /// <summary>
     /// The difference between an edited material and the one it was edited
     /// from. Everything not listed here keeps the original's value, so editing
@@ -45,13 +93,26 @@ namespace TsiYuki.Materials
         public List<string> enableKeywords = new List<string>();
         public List<string> disableKeywords = new List<string>();
 
+        // Applied after the property differences, on top of whatever the
+        // material's textures are by then.
+        public List<OverlayLayer> overlays = new List<OverlayLayer>();
+
         public bool IsEmpty =>
             shader == null && properties.Count == 0 && !overrideRenderQueue &&
-            enableKeywords.Count == 0 && disableKeywords.Count == 0;
+            enableKeywords.Count == 0 && disableKeywords.Count == 0 && overlays.Count == 0;
+
+        public bool HasOverlays
+        {
+            get
+            {
+                foreach (var o in overlays) if (o != null && o.IsActive) return true;
+                return false;
+            }
+        }
 
         public int Count =>
             properties.Count + (overrideRenderQueue ? 1 : 0) + (shader != null ? 1 : 0) +
-            enableKeywords.Count + disableKeywords.Count;
+            enableKeywords.Count + disableKeywords.Count + overlays.Count;
 
         public MaterialPropertyValue Find(string propertyName)
         {
@@ -157,6 +218,16 @@ namespace TsiYuki.Materials
                         changed = true;
                     }
                     if (variant.edit == null) { variant.edit = new MaterialEdit(); changed = true; }
+                    var overlayIds = new HashSet<string>();
+                    foreach (var overlay in variant.edit.overlays)
+                    {
+                        if (overlay == null) continue;
+                        if (string.IsNullOrEmpty(overlay.id) || !overlayIds.Add(overlay.id))
+                        {
+                            overlay.id = Unique(overlayIds);
+                            changed = true;
+                        }
+                    }
                     if (variant.value <= 0) { variant.value = target.nextValue++; changed = true; }
                 }
                 if (target.nextValue <= 0) { target.nextValue = 1; changed = true; }

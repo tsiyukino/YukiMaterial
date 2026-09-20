@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using nadena.dev.ndmf.preview;
+using TsiYuki.Core.Editor;
 using UnityEngine;
 
 namespace TsiYuki.Materials.Editor
@@ -65,6 +66,8 @@ namespace TsiYuki.Materials.Editor
         {
             readonly Dictionary<Renderer, UnityEngine.Material[]> _results = new Dictionary<Renderer, UnityEngine.Material[]>();
             readonly List<UnityEngine.Material> _owned = new List<UnityEngine.Material>();
+            // Small textures: this runs on every edit and has to stay responsive.
+            readonly TextureBaker _baker = new TextureBaker(compress: false, maxSize: 1024);
 
             public RenderAspects WhatChanged => RenderAspects.Material;
 
@@ -85,6 +88,7 @@ namespace TsiYuki.Materials.Editor
 
                     var patched = MaterialDiff.Build(source, variant.edit, source.name + " (preview)");
                     patched.hideFlags = HideFlags.HideAndDontSave;
+                    OverlayBaker.Apply(patched, variant.edit, _baker, source.name);
                     _owned.Add(patched);
                     materials[target.slot] = patched;
                     any = true;
@@ -106,6 +110,7 @@ namespace TsiYuki.Materials.Editor
                     if (material != null) Object.DestroyImmediate(material);
                 _owned.Clear();
                 _results.Clear();
+                _baker.Dispose();
             }
         }
     }

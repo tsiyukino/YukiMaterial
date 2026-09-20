@@ -14,7 +14,7 @@
   "vpmDependencies": {
     "com.vrchat.avatars": ">=3.7.0",
     "nadena.dev.ndmf": ">=1.11.0 <2.0.0",
-    "moe.tsiyuki.core": ">=0.1.0"
+    "moe.tsiyuki.core": ">=0.2.0"
   },
   "keywords": [
     "vrchat",
