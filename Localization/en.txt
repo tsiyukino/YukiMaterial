@@ -78,3 +78,24 @@ ui.overlay.order = Layers are merged top to bottom.
 warn.no_texture_slot = {0}: this shader has no texture to merge a {1} layer into, so that layer is skipped.
 warn.uv_mismatch = {0}: {1} has a different shape from the texture it is merged into. Overlays are drawn for one UV layout, so check the result.
 info.emission_enabled = {0}: glow was switched off, so {1} was turned on for the glow layer to show.
+
+# --- versions and menus ---------------------------------------------------
+ui.as_menu = Make a menu
+ui.as_menu.tip = Turns the versions of each material slot into an expression menu, so they can be switched in game.
+ui.as_menu.help = Each material slot becomes a submenu of versions, switched in game. Costs one synced int per slot.
+ui.permanent.help = The change is applied on upload and cannot be switched. Nothing is added to the menu and no parameter is used.
+ui.menu_name = Menu name
+ui.menu_name.tip = Empty uses the object name.
+ui.saved = Remember the choice
+ui.saved.tip = Whether the selection persists across worlds and sessions.
+ui.variants = Versions
+ui.variants.help = Versions of this material slot. Pick one to edit it; Try on shows it in the Scene view.
+ui.variant_name = Version name
+ui.variant_n = Version {0}
+ui.add_variant = Add a version
+ui.icon = Icon
+ui.try_on = Try on
+ui.try_on.tip = Shows this version in the Scene view. Nothing is written to the scene.
+ui.stop_preview = Stop
+ui.set_default = Make default
+ui.badge.default = Default

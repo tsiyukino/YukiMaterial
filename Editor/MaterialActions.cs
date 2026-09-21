@@ -57,17 +57,16 @@ namespace TsiYuki.Materials.Editor
             UndoEdit.End(config);
         }
 
-        public static void ResetEdit(YukiMaterial config, MaterialTarget target)
+        public static void ResetEdit(YukiMaterial config, MaterialVariant variant)
         {
+            if (variant == null) return;
             UndoEdit.Begin(config, "Reset material");
-            var variant = target.First;
-            if (variant != null) variant.edit = new MaterialEdit();
+            variant.edit = new MaterialEdit();
             UndoEdit.End(config);
         }
 
-        public static void ResetProperty(YukiMaterial config, MaterialTarget target, string propertyName)
+        public static void ResetProperty(YukiMaterial config, MaterialVariant variant, string propertyName)
         {
-            var variant = target.First;
             if (variant == null) return;
             var property = variant.edit.Find(propertyName);
             if (property == null) return;
@@ -76,9 +75,34 @@ namespace TsiYuki.Materials.Editor
             UndoEdit.End(config);
         }
 
-        public static OverlayLayer AddOverlay(YukiMaterial config, MaterialTarget target)
+        public static MaterialVariant AddVariant(YukiMaterial config, MaterialTarget target)
         {
-            var variant = target.First;
+            UndoEdit.Begin(config, "Add version");
+            var variant = new MaterialVariant { id = YukiMaterial.NewId(), value = target.nextValue++ };
+            target.variants.Add(variant);
+            if (string.IsNullOrEmpty(target.defaultVariant)) target.defaultVariant = target.variants[0].id;
+            UndoEdit.End(config);
+            return variant;
+        }
+
+        public static void RemoveVariant(YukiMaterial config, MaterialTarget target, MaterialVariant variant)
+        {
+            if (target.variants.Count <= 1) return;
+            UndoEdit.Begin(config, "Remove version");
+            target.variants.Remove(variant);
+            if (target.defaultVariant == variant.id) target.defaultVariant = target.variants[0].id;
+            UndoEdit.End(config);
+        }
+
+        public static void SetDefaultVariant(YukiMaterial config, MaterialTarget target, MaterialVariant variant)
+        {
+            UndoEdit.Begin(config, "Set default version");
+            target.defaultVariant = variant.id;
+            UndoEdit.End(config);
+        }
+
+        public static OverlayLayer AddOverlay(YukiMaterial config, MaterialTarget target, MaterialVariant variant)
+        {
             if (variant == null) return null;
             UndoEdit.Begin(config, "Add overlay");
             var layer = new OverlayLayer { id = YukiMaterial.NewId() };
@@ -87,9 +111,8 @@ namespace TsiYuki.Materials.Editor
             return layer;
         }
 
-        public static void RemoveOverlay(YukiMaterial config, MaterialTarget target, OverlayLayer layer)
+        public static void RemoveOverlay(YukiMaterial config, MaterialVariant variant, OverlayLayer layer)
         {
-            var variant = target.First;
             if (variant == null) return;
             UndoEdit.Begin(config, "Remove overlay");
             variant.edit.overlays.Remove(layer);
@@ -97,9 +120,8 @@ namespace TsiYuki.Materials.Editor
         }
 
         /// <summary>Moves a layer in the merge order; later layers go on top.</summary>
-        public static void MoveOverlay(YukiMaterial config, MaterialTarget target, OverlayLayer layer, int delta)
+        public static void MoveOverlay(YukiMaterial config, MaterialVariant variant, OverlayLayer layer, int delta)
         {
-            var variant = target.First;
             if (variant == null) return;
             var list = variant.edit.overlays;
             int from = list.IndexOf(layer);

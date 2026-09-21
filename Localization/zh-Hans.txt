@@ -78,3 +78,24 @@ ui.overlay.order = 图层按从上到下的顺序合并。
 warn.no_texture_slot = {0}：这个 shader 没有可以合并 {1} 图层的贴图属性，该图层已跳过。
 warn.uv_mismatch = {0}：{1} 和要合并进去的贴图形状不一致。叠加图是照着特定 UV 画的，请确认效果。
 info.emission_enabled = {0}：发光原本是关的，为了让发光图层可见已打开 {1}。
+
+# --- 版本与菜单 -----------------------------------------------------------
+ui.as_menu = 做成菜单
+ui.as_menu.tip = 把每个材质槽的多个版本做成表情菜单，可以在游戏里切换。
+ui.as_menu.help = 每个材质槽变成一个版本子菜单，可在游戏里切换。每个槽位占一个同步 int 参数。
+ui.permanent.help = 修改在上传时直接生效，不能切换。不进菜单，也不占参数。
+ui.menu_name = 菜单名称
+ui.menu_name.tip = 留空则用物体名。
+ui.saved = 记住选择
+ui.saved.tip = 选择是否跨世界、跨会话保留。
+ui.variants = 版本
+ui.variants.help = 这个材质槽的多个版本。点一个进行编辑；点「试穿」在 Scene 视图里看效果。
+ui.variant_name = 版本名称
+ui.variant_n = 版本 {0}
+ui.add_variant = 添加版本
+ui.icon = 图标
+ui.try_on = 试穿
+ui.try_on.tip = 在 Scene 视图里显示这个版本，不会写入场景。
+ui.stop_preview = 停止
+ui.set_default = 设为默认
+ui.badge.default = 默认

@@ -35,6 +35,11 @@ namespace TsiYuki.Materials.Editor
         public MaterialEdit Edit;
         public string DisplayName;
 
+        // Every version of this slot, in menu order. A component that applies
+        // its change permanently has exactly one and uses Edit.
+        public List<MaterialVariant> Variants = new List<MaterialVariant>();
+        public MaterialVariant Default;
+
         public string Key => Renderer.GetInstanceID() + "#" + Slot;
     }
 
@@ -92,12 +97,20 @@ namespace TsiYuki.Materials.Editor
                 if (target.source != null && current != target.source)
                     model.Warnings.Add(new ModelWarning("warn.source_changed", target.renderer, name, current.name));
 
+                var variants = target.variants.Where(v => v != null && v.edit != null).ToList();
                 var variant = target.First;
                 var edit = variant != null ? variant.edit : null;
-                if (edit == null || edit.IsEmpty) continue;
 
-                if (MaterialDiff.IsLockedPoiyomi(current) && edit.properties.Any(p => p != null && p.kind != PropertyKind.Texture))
+                // A menu keeps its slot even when the first version changes
+                // nothing, because that is exactly what an "original" option is.
+                bool anything = config.asMenu ? variants.Count > 1 : (edit != null && !edit.IsEmpty);
+                if (!anything) continue;
+
+                if (MaterialDiff.IsLockedPoiyomi(current) &&
+                    variants.Any(v => v.edit.properties.Any(p => p != null && p.kind != PropertyKind.Texture)))
                     model.Warnings.Add(new ModelWarning("warn.locked_shader", current, name));
+
+                var chosen = variants.FirstOrDefault(v => v.id == target.defaultVariant) ?? variants.FirstOrDefault();
 
                 model.Targets.Add(new ResolvedTarget
                 {
@@ -108,6 +121,8 @@ namespace TsiYuki.Materials.Editor
                     Original = current,
                     Edit = edit,
                     DisplayName = name,
+                    Variants = variants,
+                    Default = chosen,
                 });
             }
             return model;

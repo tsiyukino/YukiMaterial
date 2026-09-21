@@ -25,6 +25,36 @@ namespace TsiYuki.Materials.Editor
 
         public bool IsEnabled(ComputeContext context) => context.Observe(Toggle.IsEnabled);
 
+        /// <summary>
+        /// The version the Scene view should show for one slot, or null when
+        /// there is nothing to show.
+        ///
+        /// A component that applies its change permanently previews it as soon
+        /// as it is set up — there is only one answer, so asking would be
+        /// pointless. A component whose versions become a menu previews the one
+        /// the avatar spawns with, and only shows another when Try on says so.
+        /// </summary>
+        internal static MaterialVariant Shows(YukiMaterial config, MaterialTarget target)
+        {
+            if (target == null || target.variants.Count == 0) return null;
+
+            if (!config.asMenu)
+            {
+                var only = target.First;
+                return only != null && only.edit != null && !only.edit.IsEmpty ? only : null;
+            }
+
+            var chosenId = MaterialPreviewState.Current(config, target);
+            var variant = chosenId != null
+                ? target.variants.FirstOrDefault(v => v != null && v.id == chosenId)
+                : null;
+            if (variant == null)
+                variant = target.variants.FirstOrDefault(v => v != null && v.id == target.defaultVariant)
+                          ?? target.First;
+
+            return variant != null && variant.edit != null && !variant.edit.IsEmpty ? variant : null;
+        }
+
         public ImmutableList<RenderGroup> GetTargetGroups(ComputeContext context)
         {
             var groups = ImmutableList.CreateBuilder<RenderGroup>();
@@ -33,11 +63,13 @@ namespace TsiYuki.Materials.Editor
                 foreach (var component in context.GetComponentsInChildren<YukiMaterial>(root, true))
                 {
                     if (component == null) continue;
-                    // Re-run whenever any field of the component changes.
+                    // Re-run whenever any field of the component changes, or when
+                    // Try on points at a different version.
                     context.Observe(component, c => JsonUtility.ToJson(c), (a, b) => a == b);
+                    MaterialPreviewState.Observe(context);
 
                     var renderers = component.targets
-                        .Where(t => t != null && t.renderer != null && t.First != null && t.First.edit != null && !t.First.edit.IsEmpty)
+                        .Where(t => t != null && t.renderer != null && Shows(component, t) != null)
                         .Select(t => t.renderer)
                         .Distinct()
                         .ToList();
@@ -80,8 +112,8 @@ namespace TsiYuki.Materials.Editor
                 foreach (var target in component.targets)
                 {
                     if (target == null || target.renderer != original) continue;
-                    var variant = target.First;
-                    if (variant == null || variant.edit == null || variant.edit.IsEmpty) continue;
+                    var variant = Shows(component, target);
+                    if (variant == null) continue;
                     if (target.slot < 0 || target.slot >= materials.Length) continue;
                     var source = materials[target.slot];
                     if (source == null) continue;

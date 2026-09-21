@@ -26,7 +26,9 @@ namespace TsiYuki.Materials.Editor
         // what sits in the slot and _reference is _base already switched to the
         // edit's shader, so diffing costs no allocation per repaint.
         [SerializeField] string selectedId = "";
+        [SerializeField] string editingVariantId = "";
         MaterialTarget _bound;
+        MaterialVariant _boundVariant;
         UnityEngine.Material _base;
         UnityEngine.Material _reference;
         UnityEngine.Material _work;
@@ -55,10 +57,20 @@ namespace TsiYuki.Materials.Editor
             _reference = null;
             _base = null;
             _bound = null;
+            _boundVariant = null;
             _lastJson = "";
         }
 
         // ------------------------------------------------------------ binding
+
+        /// <summary>The version the inspector is editing.</summary>
+        MaterialVariant Editing(MaterialTarget target)
+        {
+            if (target == null || target.variants.Count == 0) return null;
+            return target.variants.FirstOrDefault(v => v != null && v.id == editingVariantId)
+                   ?? target.variants.FirstOrDefault(v => v != null && v.id == target.defaultVariant)
+                   ?? target.First;
+        }
 
         void Bind(MaterialTarget target)
         {
@@ -68,8 +80,9 @@ namespace TsiYuki.Materials.Editor
             if (target.slot < 0 || target.slot >= slots.Length || slots[target.slot] == null) return;
 
             _bound = target;
+            _boundVariant = Editing(target);
             _base = slots[target.slot];
-            var edit = target.First != null ? target.First.edit : new MaterialEdit();
+            var edit = _boundVariant != null ? _boundVariant.edit : new MaterialEdit();
 
             _work = MaterialDiff.Build(_base, edit, _base.name);
             _work.hideFlags = HideFlags.HideAndDontSave;
@@ -87,7 +100,7 @@ namespace TsiYuki.Materials.Editor
         void Capture()
         {
             if (_bound == null || _work == null || _base == null) return;
-            var variant = _bound.First;
+            var variant = _boundVariant;
             if (variant == null) return;
 
             // A shader swap in the panel invalidates the cached reference.
@@ -124,6 +137,24 @@ namespace TsiYuki.Materials.Editor
                 EditorGUILayout.HelpBox(L["ui.not_in_avatar"], MessageType.Warning);
 
             DrawWarnings(config);
+
+            EditorGUI.BeginChangeCheck();
+            var asMenu = EditorGUILayout.Toggle(new GUIContent(L["ui.as_menu"], L["ui.as_menu.tip"]), config.asMenu);
+            var menuName = config.asMenu ? EditorGUILayout.TextField(new GUIContent(L["ui.menu_name"], L["ui.menu_name.tip"]), config.displayName) : config.displayName;
+            var saved = config.asMenu ? EditorGUILayout.Toggle(new GUIContent(L["ui.saved"], L["ui.saved.tip"]), config.saved) : config.saved;
+            if (EditorGUI.EndChangeCheck())
+            {
+                UndoEdit.Begin(config, "Edit material component");
+                config.asMenu = asMenu;
+                config.displayName = menuName;
+                config.saved = saved;
+                UndoEdit.End(config);
+                MaterialPreviewState.Clear();
+                Release();
+                GUIUtility.ExitGUI();
+            }
+            EditorGUILayout.LabelField(config.asMenu ? L["ui.as_menu.help"] : L["ui.permanent.help"], YukiGUI.WrapMini);
+            EditorGUILayout.Space(4);
 
             YukiGUI.Section(L["ui.targets"]);
             EditorGUILayout.LabelField(L["ui.targets.help"], YukiGUI.WrapMini);
@@ -206,7 +237,7 @@ namespace TsiYuki.Materials.Editor
 
         void DrawSelected(YukiMaterial config, MaterialTarget target)
         {
-            if (_bound != target) Bind(target);
+            if (_bound != target || _boundVariant != Editing(target)) Bind(target);
             if (_panel == null || _work == null)
             {
                 EditorGUILayout.HelpBox(L["ui.no_targets"], MessageType.Info);
@@ -229,10 +260,13 @@ namespace TsiYuki.Materials.Editor
                     EditorGUIUtility.PingObject(Selection.activeObject = target.renderer.gameObject);
             }
 
+            DrawVariants(config, target);
+
             DrawOverlays(config, target);
 
             EditorGUILayout.Space(6);
-            var edit = target.First != null ? target.First.edit : null;
+            var editing = Editing(target);
+            var edit = editing != null ? editing.edit : null;
             if (edit != null && !edit.IsEmpty)
             {
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -246,7 +280,7 @@ namespace TsiYuki.Materials.Editor
                             GUILayout.FlexibleSpace();
                             if (GUILayout.Button(new GUIContent(L["ui.reset"], L["ui.reset_property"]), EditorStyles.miniButton, GUILayout.Width(60)))
                             {
-                                MaterialActions.ResetProperty(config, target, property.name);
+                                MaterialActions.ResetProperty(config, editing, property.name);
                                 Release();
                                 GUIUtility.ExitGUI();
                             }
@@ -258,7 +292,7 @@ namespace TsiYuki.Materials.Editor
                     if (GUILayout.Button(L["ui.reset_all"], GUILayout.Width(140)) &&
                         EditorUtility.DisplayDialog(L["ui.title"], L["ui.reset_all.confirm"], L["ui.ok"], L["ui.cancel"]))
                     {
-                        MaterialActions.ResetEdit(config, target);
+                        MaterialActions.ResetEdit(config, editing);
                         Release();
                         GUIUtility.ExitGUI();
                     }
@@ -299,7 +333,7 @@ namespace TsiYuki.Materials.Editor
 
         void DrawOverlays(YukiMaterial config, MaterialTarget target)
         {
-            var variant = target.First;
+            var variant = Editing(target);
             if (variant == null) return;
             var overlays = variant.edit.overlays;
 
@@ -398,9 +432,90 @@ namespace TsiYuki.Materials.Editor
                 }
             }
 
-            if (moving != null) { MaterialActions.MoveOverlay(config, target, moving, move); OnOverlayChanged(); GUIUtility.ExitGUI(); }
-            if (remove != null) { _openAdvanced.Remove(remove.id); MaterialActions.RemoveOverlay(config, target, remove); OnOverlayChanged(); GUIUtility.ExitGUI(); }
+            if (moving != null) { MaterialActions.MoveOverlay(config, variant, moving, move); OnOverlayChanged(); GUIUtility.ExitGUI(); }
+            if (remove != null) { _openAdvanced.Remove(remove.id); MaterialActions.RemoveOverlay(config, variant, remove); OnOverlayChanged(); GUIUtility.ExitGUI(); }
         }
+
+        /// <summary>
+        /// The versions of one slot. Only a menu has more than one; a permanent
+        /// change has nothing to pick between, so the list stays hidden.
+        /// </summary>
+        void DrawVariants(YukiMaterial config, MaterialTarget target)
+        {
+            if (!config.asMenu) return;
+
+            YukiGUI.Section(L["ui.variants"]);
+            EditorGUILayout.LabelField(L["ui.variants.help"], YukiGUI.WrapMini);
+
+            MaterialVariant remove = null, makeDefault = null;
+            var editing = Editing(target);
+
+            foreach (var variant in target.variants.ToList())
+            {
+                if (variant == null) continue;
+                bool isEditing = variant == editing;
+                using (new EditorGUILayout.HorizontalScope(isEditing ? EditorStyles.helpBox : GUIStyle.none))
+                {
+                    if (GUILayout.Button(VariantName(target, variant), isEditing ? EditorStyles.boldLabel : EditorStyles.label))
+                    {
+                        editingVariantId = variant.id;
+                        Release();
+                        GUIUtility.ExitGUI();
+                    }
+
+                    bool showing = MaterialPreviewState.IsShowing(config, target, variant);
+                    if (GUILayout.Button(new GUIContent(showing ? L["ui.stop_preview"] : L["ui.try_on"], L["ui.try_on.tip"]),
+                                         EditorStyles.miniButton, GUILayout.Width(70)))
+                        MaterialPreviewState.Show(config, target, showing ? null : variant);
+
+                    bool isDefault = variant.id == target.defaultVariant;
+                    using (new EditorGUI.DisabledScope(isDefault))
+                        if (GUILayout.Button(isDefault ? L["ui.badge.default"] : L["ui.set_default"], EditorStyles.miniButton, GUILayout.Width(70)))
+                            makeDefault = variant;
+
+                    using (new EditorGUI.DisabledScope(target.variants.Count <= 1))
+                        if (GUILayout.Button("\u00d7", GUILayout.Width(22))) remove = variant;
+                }
+            }
+
+            if (makeDefault != null) { MaterialActions.SetDefaultVariant(config, target, makeDefault); GUIUtility.ExitGUI(); }
+            if (remove != null)
+            {
+                if (remove == editing) editingVariantId = "";
+                MaterialPreviewState.Show(config, target, null);
+                MaterialActions.RemoveVariant(config, target, remove);
+                Release();
+                GUIUtility.ExitGUI();
+            }
+
+            if (GUILayout.Button(L["ui.add_variant"], GUILayout.Width(140)))
+            {
+                var added = MaterialActions.AddVariant(config, target);
+                editingVariantId = added.id;
+                Release();
+                GUIUtility.ExitGUI();
+            }
+
+            // Renaming the version being edited, where it is being edited.
+            if (editing != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                var name = EditorGUILayout.TextField(L["ui.variant_name"], editing.displayName);
+                var icon = (Texture2D)EditorGUILayout.ObjectField(L["ui.icon"], editing.icon, typeof(Texture2D), false, GUILayout.Height(16));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    UndoEdit.Begin(config, "Rename version");
+                    editing.displayName = name;
+                    editing.icon = icon;
+                    UndoEdit.End(config);
+                }
+            }
+            EditorGUILayout.Space(4);
+        }
+
+        string VariantName(MaterialTarget target, MaterialVariant variant) =>
+            MaterialModel.Fallback(variant.displayName,
+                MaterialText.L.Tr("ui.variant_n", target.variants.IndexOf(variant) + 1));
 
         /// <summary>What the layers add up to, so the result is visible here
         /// rather than only in the Scene view.</summary>
@@ -485,7 +600,7 @@ namespace TsiYuki.Materials.Editor
 
         void AddLayer(YukiMaterial config, MaterialTarget target, Texture texture)
         {
-            var layer = MaterialActions.AddOverlay(config, target);
+            var layer = MaterialActions.AddOverlay(config, target, Editing(target));
             if (layer == null) return;
             OverlayTarget guessedTarget;
             OverlayBlend guessedBlend;
@@ -504,7 +619,7 @@ namespace TsiYuki.Materials.Editor
         /// </summary>
         void OnOverlayChanged()
         {
-            if (_bound != null && _bound.First != null) _lastJson = JsonUtility.ToJson(_bound.First.edit);
+            if (_boundVariant != null) _lastJson = JsonUtility.ToJson(_boundVariant.edit);
         }
     }
 }
