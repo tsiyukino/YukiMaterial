@@ -174,6 +174,12 @@ namespace TsiYuki.Materials
         public bool saved = true;
         public string parameterName = "";
 
+        // Where this menu is installed; null is the avatar's root menu. Takes a
+        // VRCExpressionsMenu asset, an object carrying a Modular Avatar menu
+        // item, or another TsiYuki component that makes a menu. Held loosely so
+        // the runtime assembly needs none of those types.
+        public UnityEngine.Object menuParent;
+
         public List<MaterialTarget> targets = new List<MaterialTarget>();
 
         public MaterialTarget FindTarget(string targetId)

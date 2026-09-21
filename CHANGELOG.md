@@ -3,6 +3,10 @@
 ## [Unreleased] — 0.1.0
 
 ### Added
+- **Install into**: which menu this appears in, instead of always the avatar's root menu. Takes a menu asset,
+  an object carrying a Modular Avatar menu item, or another TsiYuki menu — a makeup menu can live inside the
+  wardrobe's. Whichever tool runs first, the placement is settled afterwards by TsiYuki Core, and a loop is
+  reported instead of being followed.
 - **Versions and a menu.** A material slot can hold several versions — the same face with several makeups —
   and turning on "Make a menu" gives each slot a submenu that switches them in game. One synced int per
   slot; the versions are whole materials swapped by the animator, so nothing is asked of the shader and a

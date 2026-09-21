@@ -30,6 +30,9 @@ namespace TsiYuki.Materials.Editor
         protected override void Configure()
         {
             InPhase(BuildPhase.Generating)
+                // Core settles menu placement once every TsiYuki tool has run,
+                // so this has to be done by then.
+                .BeforePlugin("moe.tsiyuki.core")
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("Apply material edits", Execute)
                 // NDMF only runs a filter a pass asks for; without this the
@@ -168,7 +171,9 @@ namespace TsiYuki.Materials.Editor
                 Saved = model.Saved,
                 Targets = targets,
             };
-            MaterialMenuGenerator.Build(trimmed, host.transform);
+            var menuRoot = MaterialMenuGenerator.Build(trimmed, host.transform);
+            MenuPlacement.Place(model.Config, model.Config.menuParent, menuRoot, model.MenuName,
+                (key, args) => Report(ErrorSeverity.NonFatal, key, model.Config, args));
         }
 
         static void Report(ErrorSeverity severity, string key, Object context, object[] args)

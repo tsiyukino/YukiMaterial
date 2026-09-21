@@ -142,12 +142,16 @@ namespace TsiYuki.Materials.Editor
             var asMenu = EditorGUILayout.Toggle(new GUIContent(L["ui.as_menu"], L["ui.as_menu.tip"]), config.asMenu);
             var menuName = config.asMenu ? EditorGUILayout.TextField(new GUIContent(L["ui.menu_name"], L["ui.menu_name.tip"]), config.displayName) : config.displayName;
             var saved = config.asMenu ? EditorGUILayout.Toggle(new GUIContent(L["ui.saved"], L["ui.saved.tip"]), config.saved) : config.saved;
+            var parent = config.asMenu
+                ? EditorGUILayout.ObjectField(new GUIContent(L["ui.menu_parent"], L["ui.menu_parent.tip"]), config.menuParent, typeof(UnityEngine.Object), true)
+                : config.menuParent;
             if (EditorGUI.EndChangeCheck())
             {
                 UndoEdit.Begin(config, "Edit material component");
                 config.asMenu = asMenu;
                 config.displayName = menuName;
                 config.saved = saved;
+                config.menuParent = parent;
                 UndoEdit.End(config);
                 MaterialPreviewState.Clear();
                 Release();

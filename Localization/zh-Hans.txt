@@ -99,3 +99,8 @@ ui.try_on.tip = 在 Scene 视图里显示这个版本，不会写入场景。
 ui.stop_preview = 停止
 ui.set_default = 设为默认
 ui.badge.default = 默认
+ui.menu_parent = 装进菜单
+ui.menu_parent.tip = 这个菜单出现在哪里。留空 = 模型根菜单。可以填菜单资产、带 Modular Avatar 菜单项的物体，或另一个 TsiYuki 菜单。
+warn.menu_parent_missing = {0}：{1} 本身不生成菜单，所以这个留在根菜单。
+warn.menu_cycle = {0}：装进 {1} 会让菜单套进自己里面，所以这个留在根菜单。
+warn.no_install_target = {0}：当前 Modular Avatar 版本没有 Menu Install Target，菜单留在根菜单。
