@@ -41,6 +41,13 @@ namespace TsiYuki.Materials.Editor
         public MaterialVariant Default;
 
         public string Key => Renderer.GetInstanceID() + "#" + Slot;
+
+        /// <summary>Synced int that picks the version. Built from ids, never
+        /// from names, so renaming keeps saved selections.</summary>
+        public string ParameterName;
+
+        public string VariantName(MaterialVariant variant) =>
+            MaterialModel.Fallback(variant.displayName, MaterialText.L.Tr("ui.variant_n", Variants.IndexOf(variant) + 1));
     }
 
     /// <summary>One YukiMaterial component resolved for a build or for display.</summary>
@@ -49,6 +56,14 @@ namespace TsiYuki.Materials.Editor
         public YukiMaterial Config;
         public List<ResolvedTarget> Targets = new List<ResolvedTarget>();
         public List<ModelWarning> Warnings = new List<ModelWarning>();
+
+        public string MenuName;
+        public Texture2D MenuIcon;
+        public bool AsMenu;
+        public bool Saved;
+
+        /// <summary>One synced int per slot, eight bits each.</summary>
+        public int TotalBits => AsMenu ? Targets.Count * 8 : 0;
 
         public static string Fallback(string value, string fallback) =>
             string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
@@ -64,6 +79,14 @@ namespace TsiYuki.Materials.Editor
         {
             var model = new MaterialModel { Config = config };
             if (config == null) return model;
+
+            model.AsMenu = config.asMenu;
+            model.Saved = config.saved;
+            model.MenuIcon = config.icon;
+            model.MenuName = Fallback(config.displayName, config.gameObject.name);
+            var prefix = !string.IsNullOrWhiteSpace(config.parameterName)
+                ? config.parameterName.Trim()
+                : "Material/" + config.id;
 
             foreach (var target in config.targets)
             {
@@ -123,6 +146,7 @@ namespace TsiYuki.Materials.Editor
                     DisplayName = name,
                     Variants = variants,
                     Default = chosen,
+                    ParameterName = prefix + "/" + target.id,
                 });
             }
             return model;

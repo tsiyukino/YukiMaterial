@@ -3,6 +3,13 @@
 ## [Unreleased] — 0.1.0
 
 ### Added
+- **Versions and a menu.** A material slot can hold several versions — the same face with several makeups —
+  and turning on "Make a menu" gives each slot a submenu that switches them in game. One synced int per
+  slot; the versions are whole materials swapped by the animator, so nothing is asked of the shader and a
+  locked Poiyomi material works too. One slot flattens the submenu away.
+- The two kinds of component preview differently, on purpose. A permanent change shows in the Scene view as
+  soon as it is set up, since there is only one answer. A menu shows the version the avatar spawns with and
+  switches only when you click Try on, the way the wardrobe does.
 - **Overlay mode.** Drop images onto the drop area and each is merged into the material's own texture at
   build time, the way you would flatten a PSD layer onto the base — which is what texture and makeup packs
   normally ask you to do by hand in an image editor. No shader feature is used for the merge, so it works
