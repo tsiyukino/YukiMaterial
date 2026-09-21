@@ -104,3 +104,17 @@ ui.menu_parent.tip = このメニューが表示される場所。空ならア�
 warn.menu_parent_missing = {0}: {1} 自体はメニューを生成しないため、ルートメニューのままにします。
 warn.menu_cycle = {0}: {1} に入れるとメニューが自分自身を含むことになるため、ルートメニューのままにします。
 warn.no_install_target = {0}: この Modular Avatar には Menu Install Target がないため、ルートメニューのままにします。
+
+# --- 概要ウィンドウ -------------------------------------------------------
+ui.avatar = アバター
+ui.pick_avatar = アバターを選んでください（その中のオブジェクトを選択しても構いません）。
+ui.window.empty = このアバターにはまだ Yuki Material コンポーネントがありません。
+ui.window.permanent = アップロード時に適用
+ui.window.menus = メニューに表示
+ui.window.summary = コンポーネント {0} 個、マテリアルスロット {1} 個、同期ビット {2}
+ui.window.bits = {0} ビット
+ui.window.installs_into = {0} に追加
+ui.window.versions = バージョン {0} 個
+ui.window.use_selection = 選択中を使う
+ui.window.add_to = {0} に追加
+ui.window.add_hint = 追加するにはアバター内のオブジェクトを選択してください

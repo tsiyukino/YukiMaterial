@@ -104,3 +104,17 @@ ui.menu_parent.tip = 这个菜单出现在哪里。留空 = 模型根菜单。�
 warn.menu_parent_missing = {0}：{1} 本身不生成菜单，所以这个留在根菜单。
 warn.menu_cycle = {0}：装进 {1} 会让菜单套进自己里面，所以这个留在根菜单。
 warn.no_install_target = {0}：当前 Modular Avatar 版本没有 Menu Install Target，菜单留在根菜单。
+
+# --- 总览窗口 -------------------------------------------------------------
+ui.avatar = 模型
+ui.pick_avatar = 选一个模型（或选中模型内的任意物体）。
+ui.window.empty = 这个模型上还没有 Yuki Material 组件。
+ui.window.permanent = 上传时直接生效
+ui.window.menus = 进菜单
+ui.window.summary = {0} 个组件，{1} 个材质槽，{2} 同步比特
+ui.window.bits = {0} 比特
+ui.window.installs_into = 装进 {0}
+ui.window.versions = {0} 个版本
+ui.window.use_selection = 用当前选中
+ui.window.add_to = 添加到 {0}
+ui.window.add_hint = 选中模型内的一个物体才能添加

@@ -40,7 +40,11 @@ namespace TsiYuki.Materials.Editor
                 last = config;
             }
 
-            if (last != null) Selection.activeGameObject = last.gameObject;
+            if (last != null)
+            {
+                Selection.activeGameObject = last.gameObject;
+                MaterialWindow.Open(last);
+            }
         }
 
         [MenuItem(Path, true)]

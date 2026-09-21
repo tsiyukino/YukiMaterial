@@ -104,3 +104,17 @@ ui.menu_parent.tip = Which menu this appears in. Empty is the avatar's root menu
 warn.menu_parent_missing = {0}: {1} makes no menu of its own, so this stays in the root menu.
 warn.menu_cycle = {0}: installing into {1} would put a menu inside itself, so this stays in the root menu.
 warn.no_install_target = {0}: this Modular Avatar version has no Menu Install Target, so the menu stays in the root menu.
+
+# --- overview window ------------------------------------------------------
+ui.avatar = Avatar
+ui.pick_avatar = Pick an avatar (or select any object inside one).
+ui.window.empty = This avatar has no Yuki Material components yet.
+ui.window.permanent = Applied on upload
+ui.window.menus = In the menu
+ui.window.summary = {0} component(s), {1} material slot(s), {2} synced bits
+ui.window.bits = {0} bits
+ui.window.installs_into = installs into {0}
+ui.window.versions = {0} version(s)
+ui.window.use_selection = Use selection
+ui.window.add_to = Add to {0}
+ui.window.add_hint = Select an object inside this avatar to add one
