@@ -31,7 +31,10 @@ namespace TsiYuki.Materials.Editor
         {
             InPhase(BuildPhase.Generating)
                 .BeforePlugin("nadena.dev.modular-avatar")
-                .Run("Apply material edits", Execute);
+                .Run("Apply material edits", Execute)
+                // NDMF only runs a filter a pass asks for; without this the
+                // Scene view shows nothing at all.
+                .PreviewingWith(new MaterialPreview());
         }
 
         static void Execute(BuildContext ctx)
