@@ -1,120 +1,173 @@
 # Yuki Material — 简体中文
 
 ui.title = Yuki Material
-ui.not_in_avatar = 必须放在模型内部（父级里没有找到 VRC Avatar Descriptor）。
+ui.not_in_avatar = 这个组件必须放在模型里（父级里找不到 VRC Avatar Descriptor）。
 ui.ok = 确定
 ui.cancel = 取消
 ui.remove = 删除
-ui.add = 添加
 ui.reset = 还原
-
-ui.targets = 材质槽
-ui.targets.help = 每一行是一个渲染器上的一个材质槽。只记录与原材质的差异，原材质本身不会被修改。
-ui.no_targets = 还没有材质槽。
-ui.fill_from_object = 从本物体填充
-ui.fill_from_object.tip = 加入本物体上渲染器的所有材质槽。不需要的行自己删掉。
-ui.add_target = 添加材质槽
+ui.edit = 编辑
+ui.duplicate = 复制
+ui.icon = 图标
 ui.select_object = 选中
-ui.display_name = 名称
-ui.display_name.tip = 显示在这个列表里。留空则用材质名。
-ui.slot = 槽位 {0}
-ui.source = 原始
-ui.edited = 已修改
-ui.unchanged = 未修改
-ui.changes = 改了 {0} 项
-ui.no_changes = 还没有任何修改。在下面编辑这个材质。
-ui.reset_all = 全部还原
-ui.reset_all.confirm = 丢弃这个材质上的所有修改，恢复成原始状态？
-ui.reset_property = 还原这一项
-ui.changed_list = 已修改的项
-ui.edit_material = 材质设置
-ui.edit_material.help = 这就是 shader 自己的面板。你在这里改的任何东西都会被记成差异，构建时应用到一份副本上。
 
+# --- the panel ------------------------------------------------------------
+ui.avatar = 模型
+ui.pick_avatar = 选一个模型（或者选中模型里的任意物体）。
+ui.window.use_selection = 用当前选中
+ui.window.summary = {0} 个菜单，{1} 个材质插槽，{2} 同步比特
+ui.window.bits = {0} 比特
+ui.nothing_selected = 在左边选一个菜单，或者一个材质插槽。
+ui.open_panel = 打开面板
+ui.open_panel.help = 外观在面板里编辑，那里能同时看到菜单牵涉到的其他物体。这个组件只负责记录这个物体的插槽能长成什么样。
+ui.open_panel.menu_help = 菜单是一张表：状态竖着排，它驱动的插槽横着排。表画在面板里。
+
+ui.tree.menus = 菜单
+ui.tree.no_menus = 还没有菜单。菜单就是游戏里切换外观的那个东西。
+ui.tree.new_menu = + 新建菜单
+ui.tree.objects = 物体
+ui.tree.no_objects = 还没有设置过任何物体。
+ui.tree.add_object = + 添加 {0}
+ui.tree.add_hint = 请选中模型里的一个物体
+
+# --- one menu -------------------------------------------------------------
+ui.menu_name = 菜单名称
+ui.menu_name.tip = 留空则用物体名。
+ui.saved = 记住选择
+ui.saved.tip = 换世界、下次上线时是否保留当前选择。
+ui.menu_parent = 装进哪里
+ui.menu_parent.tip = 这个菜单出现在哪一层。留空就是模型的根菜单。可以填菜单资产、带 Modular Avatar 菜单项的物体，或者另一个 TsiYuki 菜单。
+ui.menu.advanced = 高级
+ui.menu.parameter = 参数名
+ui.menu.parameter.tip = 留空会按组件自动生成，改名也不会失效。两个菜单填同一个名字就会共用一个参数、一起切换。
+ui.menu.parameter.current = 实际使用：{0}
+ui.menu.cost = 无论驱动多少个插槽，都只花一个同步 int（8 比特）。
+ui.menu.states_n = {0} 个状态
+ui.menu.slots_n = {0} 个插槽
+ui.menu.remove.confirm = 删除菜单「{0}」？外观本身仍然留在各自的物体上。
+
+ui.table.title = 状态表
+ui.table.help = 一行是菜单可以切到的一个状态，一列是它驱动的一个材质插槽。格子里写的是这个状态下该插槽穿哪个外观——不选就是保持它原本的材质。列可以来自不同物体，头发和耳朵同时变色就是这么来的。
+ui.table.state = 状态
+ui.table.empty = 这个菜单还没有引用任何插槽。把它该改的材质插槽加进来——插槽可以在模型里的任何物体上。
+ui.tree.drop = 把 Hierarchy 里的物体拖到这里
+ui.table.drop = + 引用材质插槽——也可以从左边的列表拖插槽进来，或者从 Hierarchy 拖物体进来
+ui.table.add_state = + 添加状态
+ui.table.new_look = + 新建外观…
+ui.table.no_slots = 所有插槽都已经被某个菜单驱动了。
+
+ui.column.tip = 点一下打开这个插槽。
+ui.column.missing = （插槽已不存在）
+ui.column.unresolved = 暂时不可用
+ui.column.move_left = 左移
+ui.column.move_right = 右移
+ui.column.select = 选中物体
+ui.column.remove = 从这个菜单移除
+ui.state.move_up = 上移
+ui.state.move_down = 下移
+ui.state.duplicate = 复制
+ui.state_n = 状态 {0}
+ui.set_default = 设为开局
+ui.badge.default = 开局
+ui.try_on = 试穿
+ui.try_on.tip = 在 Scene 视图里显示这个状态，菜单驱动的每个插槽都会跟着变。不会写进场景。
+ui.stop_preview = 停止
+
+# --- one material slot ----------------------------------------------------
+ui.slot = 插槽 {0}
+ui.display_name = 名称
+ui.display_name.tip = 在面板里显示的名字。留空则用材质名。
+ui.remove_slot = 移除插槽
+ui.slot.driven_by = 由菜单「{0}」驱动
+ui.slot.not_driven = 没有菜单驱动这个插槽。
+ui.slot.open_menu = 打开菜单
+ui.slot.permanent = 上传时直接生效
+ui.slot.base = 常驻外观
+ui.slot.base.tip = 没有任何菜单切换它时，这个插槽穿什么。
+ui.slot.base.help = 没有菜单管它时，构建出来的模型上就是这个外观——想让改动常驻就这么设。
+ui.slot.base.driven = 有菜单在驱动这个插槽，开局穿的是菜单里设为「开局」的那个状态。
+ui.no_targets = 还没有材质插槽。
+ui.fill_from_object = 从这个物体填充
+ui.fill_from_object.tip = 把这个物体上渲染器的每个材质插槽都加进来，用不到的删掉即可。
+
+# --- looks ----------------------------------------------------------------
+ui.looks = 外观
+ui.looks.help = 这个插槽能长成的样子。点「编辑」就能用 shader 自己的界面改它；只记录与插槽里现有材质的差异，原始材质资产始终不会被改动。
+ui.looks_n = {0} 个外观
+ui.no_looks = 这个插槽还没有外观。要改它的材质，先新建一个外观——外观就是这个插槽的一种样子，只记录与原材质的差异。
+ui.add_look = + 新建外观
+ui.original = 保持原样
+ui.variant_n = 外观 {0}
+ui.look.name = 外观名称
+ui.look.name.tip = 状态自己没起名字时，菜单里显示的就是它。
+ui.look.worn_in = 用在：{0}
+ui.look.worn_nowhere = 目前还没有地方用到这个外观。在菜单的状态表里选中它，或者把它设为插槽的常驻外观。
+ui.back_to_slot = 返回插槽
+ui.changes = 改了 {0} 项
+ui.unchanged = 没有改动
+ui.no_material = 读不到这个插槽的材质，没有可编辑的内容。
+
+# --- editing a material ---------------------------------------------------
+ui.changed_list_n = 改动（{0} 项）
+ui.add_look.first = + 新建外观并开始编辑
+ui.changed_list.help = 左边是材质原本的值，右边是这个外观替换成的值。点贴图名可以定位到那个文件。
+ui.value.tiling = 平铺 {0} 偏移 {1}
+ui.no_changes = 还什么都没改。在下面编辑材质，或者往上面拖一张图。
+ui.reset_all = 全部还原
+ui.reset_all.confirm = 丢弃这个外观里的所有改动，回到材质原本的样子？
+ui.reset_property = 还原这一项
+ui.edit_material = 材质设置
+ui.edit_material.help = 这就是着色器自己的界面。在这里改的东西会被记成差异，构建时应用到一份副本上。
 ui.render_queue = 渲染队列
-ui.shader_changed = Shader 换成了 {0}
+ui.shader_changed = 着色器换成了 {0}
 ui.keywords_changed = 关键字有改动
 
-warn.missing_renderer = 有一个材质槽没有渲染器，已跳过。
-warn.missing_source = {0}：原材质丢失，该槽位已跳过。
-warn.slot_out_of_range = {0}：渲染器上已经没有槽位 {1}，已跳过。
-warn.source_changed = {0}：该槽位现在是 {1}，不是当初修改时的那个材质。修改仍会应用，请确认效果。
-warn.missing_property = {0}：shader 上已经没有 {1} 这个属性，该项修改已跳过。
-warn.outside_avatar = {0} 不在这个模型内部。
-warn.locked_shader = {0} 使用了锁定的 Poiyomi shader。贴图修改有效；数值和开关类修改已被烘进 shader，不会生效。需要改的话请先解锁材质。
-
-conflict.two_components = {0} 的槽位 {1} 被多个 Yuki Material 组件修改（{2}）。
-
-preview.name = Yuki Material
-
-# --- 叠加 -----------------------------------------------------------------
-ui.overlays = 叠加
-ui.overlay.drop = 把图片拖到这里，或点击选择
-ui.overlay.empty = （还没有图片）
-ui.overlay.result = 合成结果
-ui.overlays.help = 把图片合并进材质自己的贴图，相当于替你在图像软件里把图层合并到底图上。任何 shader 都适用。
-ui.no_overlays = 还没有叠加。把图片拖到下面。
-ui.add_overlay = 添加图片
+# --- overlays -------------------------------------------------------------
+ui.overlays = 叠加图层
+ui.overlays.help = 把图片合并进材质自己的贴图，就像在图像软件里把图层拼合到底图上一样。任何着色器都能用。
+ui.overlay.drop = 把图片拖到这里，或者点一下选择
+ui.overlay.empty = （没有图片）
+ui.overlay.result = 叠加之后的结果
 ui.overlay.image = 图片
-ui.overlay.target = 叠加到
-ui.overlay.target.BaseColor = 底色
-ui.overlay.target.Emission = 发光
+ui.overlay.target = 合并到
+ui.overlay.target.BaseColor = 基础颜色
+ui.overlay.target.Emission = 自发光
 ui.overlay.opacity = 不透明度
-ui.overlay.advanced = 高级设置
+ui.overlay.advanced = 高级
 ui.overlay.blend = 混合模式
 ui.overlay.blend.Normal = 正常
 ui.overlay.blend.Add = 相加
 ui.overlay.blend.Screen = 滤色
 ui.overlay.blend.Multiply = 正片叠底
 ui.overlay.mask = 遮罩
-ui.overlay.mask.tip = 只在这张图的白色部分生效。留空表示全图生效。
-ui.overlay.tint = 着色
+ui.overlay.mask.tip = 只在这张图的白色部分生效。留空就是整张都生效。
+ui.overlay.tint = 染色
 ui.overlay.scale = 缩放
 ui.overlay.offset = 偏移
 ui.overlay.property = 贴图属性
-ui.overlay.property.tip = 留空则按上面选的目标自动挑选常用属性。
+ui.overlay.property.tip = 留空则按所选目标自动挑常用的那个属性。
 ui.overlay.move_up = 上移
 ui.overlay.move_down = 下移
-ui.overlay.order = 图层按从上到下的顺序合并。
-warn.no_texture_slot = {0}：这个 shader 没有可以合并 {1} 图层的贴图属性，该图层已跳过。
-warn.uv_mismatch = {0}：{1} 和要合并进去的贴图形状不一致。叠加图是照着特定 UV 画的，请确认效果。
-info.emission_enabled = {0}：发光原本是关的，为了让发光图层可见已打开 {1}。
+ui.overlay.order = 图层从上到下依次合并。
 
-# --- 版本与菜单 -----------------------------------------------------------
-ui.as_menu = 做成菜单
-ui.as_menu.tip = 把每个材质槽的多个版本做成表情菜单，可以在游戏里切换。
-ui.as_menu.help = 每个材质槽变成一个版本子菜单，可在游戏里切换。每个槽位占一个同步 int 参数。
-ui.permanent.help = 修改在上传时直接生效，不能切换。不进菜单，也不占参数。
-ui.menu_name = 菜单名称
-ui.menu_name.tip = 留空则用物体名。
-ui.saved = 记住选择
-ui.saved.tip = 选择是否跨世界、跨会话保留。
-ui.variants = 版本
-ui.variants.help = 这个材质槽的多个版本。点一个进行编辑；点「试穿」在 Scene 视图里看效果。
-ui.variant_name = 版本名称
-ui.variant_n = 版本 {0}
-ui.add_variant = 添加版本
-ui.icon = 图标
-ui.try_on = 试穿
-ui.try_on.tip = 在 Scene 视图里显示这个版本，不会写入场景。
-ui.stop_preview = 停止
-ui.set_default = 设为默认
-ui.badge.default = 默认
-ui.menu_parent = 装进菜单
-ui.menu_parent.tip = 这个菜单出现在哪里。留空 = 模型根菜单。可以填菜单资产、带 Modular Avatar 菜单项的物体，或另一个 TsiYuki 菜单。
-warn.menu_parent_missing = {0}：{1} 本身不生成菜单，所以这个留在根菜单。
-warn.menu_cycle = {0}：装进 {1} 会让菜单套进自己里面，所以这个留在根菜单。
-warn.no_install_target = {0}：当前 Modular Avatar 版本没有 Menu Install Target，菜单留在根菜单。
+# --- problems -------------------------------------------------------------
+warn.missing_renderer = 有一个材质插槽没有渲染器，已跳过。
+warn.missing_source = {0}：原始材质丢失，这个插槽已跳过。
+warn.slot_out_of_range = {0}：这个渲染器上已经没有插槽 {1} 了，已跳过。
+warn.source_changed = {0}：插槽里现在是 {1}，不是这些外观当初对着做的那个材质。改动仍会应用，请检查结果。
+warn.missing_property = {0}：着色器里已经没有属性 {1} 了，这项改动已跳过。
+warn.outside_avatar = {0} 不在这个模型里。
+warn.locked_shader = {0} 用的是已锁定的 Poiyomi 着色器。换贴图有效；数值和开关类改动已经被烘进着色器，改了也没用。要改就先解锁材质。
+warn.no_texture_slot = {0}：这个着色器没有可以合并 {1} 图层的贴图，该图层已跳过。
+warn.uv_mismatch = {0}：{1} 和它要合并进去的贴图形状不一致。叠加是按某一套 UV 画的，请检查结果。
+info.emission_enabled = {0}：自发光原本是关的，为了让自发光图层显示出来，已自动打开 {1}。
+warn.menu_no_slots = {0}：这个菜单没有引用任何材质插槽，不会生成任何东西。
+warn.menu_one_state = {0}：菜单至少要有两个状态才谈得上切换，不会生成任何东西。
+warn.menu_changes_nothing = {0}：每个状态都让所有插槽保持原样，不会生成任何东西。
+warn.menu_parent_missing = {0}：{1} 自己不生成菜单，因此这个菜单留在根菜单里。
+warn.menu_cycle = {0}：装进 {1} 会让菜单装进它自己，因此这个菜单留在根菜单里。
+warn.no_install_target = {0}：这个版本的 Modular Avatar 没有 Menu Install Target，菜单留在根菜单里。
+conflict.two_components = {0} 的插槽 {1} 被不止一个 Yuki Material 组件占用（{2}）。
+conflict.two_menus = {0} 的 {1} 被不止一个菜单驱动（{2}）。一个插槽只能听一个菜单的。
 
-# --- 总览窗口 -------------------------------------------------------------
-ui.avatar = 模型
-ui.pick_avatar = 选一个模型（或选中模型内的任意物体）。
-ui.window.empty = 这个模型上还没有 Yuki Material 组件。
-ui.window.permanent = 上传时直接生效
-ui.window.menus = 进菜单
-ui.window.summary = {0} 个组件，{1} 个材质槽，{2} 同步比特
-ui.window.bits = {0} 比特
-ui.window.installs_into = 装进 {0}
-ui.window.versions = {0} 个版本
-ui.window.use_selection = 用当前选中
-ui.window.add_to = 添加到 {0}
-ui.window.add_hint = 选中模型内的一个物体才能添加
+preview.name = Yuki Material

@@ -1,120 +1,173 @@
 # Yuki Material — 日本語
 
 ui.title = Yuki Material
-ui.not_in_avatar = アバターの中に置いてください（親に VRC Avatar Descriptor が見つかりません）。
+ui.not_in_avatar = アバターの中に入れてください（親に VRC Avatar Descriptor が見つかりません）。
 ui.ok = OK
 ui.cancel = キャンセル
 ui.remove = 削除
-ui.add = 追加
 ui.reset = 戻す
-
-ui.targets = マテリアルスロット
-ui.targets.help = 各行はレンダラー 1 つのマテリアルスロット 1 つです。元のマテリアルとの差分だけを保存し、元のアセットは変更しません。
-ui.no_targets = マテリアルスロットがありません。
-ui.fill_from_object = このオブジェクトから取得
-ui.fill_from_object.tip = このオブジェクトのレンダラーのマテリアルスロットをすべて追加します。不要な行は削除してください。
-ui.add_target = マテリアルスロットを追加
+ui.edit = 編集
+ui.duplicate = 複製
+ui.icon = アイコン
 ui.select_object = 選択
-ui.display_name = 名前
-ui.display_name.tip = この一覧に表示されます。空ならマテリアル名を使います。
-ui.slot = スロット {0}
-ui.source = 元
-ui.edited = 変更あり
-ui.unchanged = 変更なし
-ui.changes = {0} 項目を変更
-ui.no_changes = まだ変更がありません。下でマテリアルを編集してください。
-ui.reset_all = すべて元に戻す
-ui.reset_all.confirm = このマテリアルの変更をすべて破棄して元に戻しますか？
-ui.reset_property = この項目を戻す
-ui.changed_list = 変更した項目
-ui.edit_material = マテリアル設定
-ui.edit_material.help = シェーダー自身のインスペクターです。ここでの変更は差分として保存され、ビルド時にコピーへ適用されます。
 
+# --- the panel ------------------------------------------------------------
+ui.avatar = アバター
+ui.pick_avatar = アバターを選んでください（中のオブジェクトを選択しても大丈夫です）。
+ui.window.use_selection = 選択中を使う
+ui.window.summary = メニュー {0} 個、マテリアルスロット {1} 個、同期ビット {2}
+ui.window.bits = {0} ビット
+ui.nothing_selected = 左でメニューかマテリアルスロットを選んでください。
+ui.open_panel = パネルを開く
+ui.open_panel.help = 見た目の編集はパネルで行います。メニューが触れる他のオブジェクトも同時に見えるためです。このコンポーネントは、このオブジェクトのスロットがどうなれるかを持っているだけです。
+ui.open_panel.menu_help = メニューは表です。状態が縦、動かすスロットが横に並びます。表はパネルに描かれます。
+
+ui.tree.menus = メニュー
+ui.tree.no_menus = メニューはまだありません。ゲーム内で切り替えるのがメニューです。
+ui.tree.new_menu = + メニューを作る
+ui.tree.objects = オブジェクト
+ui.tree.no_objects = まだ設定されたオブジェクトはありません。
+ui.tree.add_object = + {0} を追加
+ui.tree.add_hint = アバター内のオブジェクトを選択してください
+
+# --- one menu -------------------------------------------------------------
+ui.menu_name = メニュー名
+ui.menu_name.tip = 空ならオブジェクト名を使います。
+ui.saved = 選択を覚える
+ui.saved.tip = ワールドをまたいでも選択を保持するかどうか。
+ui.menu_parent = 追加先
+ui.menu_parent.tip = このメニューをどこに出すか。空ならアバターのルートメニュー。メニューアセット、Modular Avatar のメニュー項目を持つオブジェクト、他の TsiYuki メニューを指定できます。
+ui.menu.advanced = 詳細
+ui.menu.parameter = パラメータ名
+ui.menu.parameter.tip = 空ならコンポーネントから自動生成され、名前を変えても壊れません。同じ名前にした 2 つのメニューは 1 つのパラメータを共有し、一緒に切り替わります。
+ui.menu.parameter.current = 実際の値: {0}
+ui.menu.cost = 動かすスロットが何個でも、同期 int 1 つ（8 ビット）だけです。
+ui.menu.states_n = 状態 {0} 個
+ui.menu.slots_n = スロット {0} 個
+ui.menu.remove.confirm = メニュー「{0}」を削除しますか？ 見た目そのものは各オブジェクトに残ります。
+
+ui.table.title = 状態の表
+ui.table.help = 1 行がメニューで切り替えられる 1 つの状態、1 列がメニューが動かすマテリアルスロットです。セルはその状態でそのスロットが何を着るかで、指定しなければ今のマテリアルのままです。列は別々のオブジェクトから来てよく、それが髪と耳を同時に変える仕組みです。
+ui.table.state = 状態
+ui.table.empty = このメニューはまだどのスロットも参照していません。動かしたいマテリアルスロットを追加してください。アバター内のどのオブジェクトのものでも構いません。
+ui.tree.drop = Hierarchy のオブジェクトをここにドロップ
+ui.table.drop = + マテリアルスロットを追加 — 左の一覧からスロットを、Hierarchy からオブジェクトをドロップしても追加できます
+ui.table.add_state = + 状態を追加
+ui.table.new_look = + 新しい見た目…
+ui.table.no_slots = すべてのスロットが既にどれかのメニューに使われています。
+
+ui.column.tip = クリックでこのスロットを開きます。
+ui.column.missing = （スロットがありません）
+ui.column.unresolved = 使えません
+ui.column.move_left = 左へ
+ui.column.move_right = 右へ
+ui.column.select = オブジェクトを選択
+ui.column.remove = このメニューから外す
+ui.state.move_up = 上へ
+ui.state.move_down = 下へ
+ui.state.duplicate = 複製
+ui.state_n = 状態 {0}
+ui.set_default = 初期にする
+ui.badge.default = 初期
+ui.try_on = 試着
+ui.try_on.tip = この状態を Scene ビューに表示します。メニューが動かすすべてのスロットが一緒に変わります。シーンには何も書き込みません。
+ui.stop_preview = 停止
+
+# --- one material slot ----------------------------------------------------
+ui.slot = スロット {0}
+ui.display_name = 名前
+ui.display_name.tip = パネルでの表示名。空ならマテリアル名を使います。
+ui.remove_slot = スロットを外す
+ui.slot.driven_by = メニュー「{0}」が動かしています
+ui.slot.not_driven = このスロットを動かすメニューはありません。
+ui.slot.open_menu = メニューを開く
+ui.slot.permanent = アップロード時に適用
+ui.slot.base = 通常の見た目
+ui.slot.base.tip = 何も切り替えないとき、このスロットが着るもの。
+ui.slot.base.help = メニューが付いていなければ、ビルドされたアバターはこれを着ます。変更を常時適用したいときはここで設定します。
+ui.slot.base.driven = メニューが動かしているので、初期状態はメニューで「初期」にした状態になります。
+ui.no_targets = マテリアルスロットがまだありません。
+ui.fill_from_object = このオブジェクトから追加
+ui.fill_from_object.tip = このオブジェクトのレンダラーのマテリアルスロットをすべて追加します。不要な行は削除してください。
+
+# --- looks ----------------------------------------------------------------
+ui.looks = 見た目
+ui.looks.help = このスロットがなれる姿です。「編集」からシェーダー自身のインスペクターで変更できます。保存されるのはスロットにあるマテリアルとの差分だけで、マテリアルアセットには触れません。
+ui.looks_n = 見た目 {0} 個
+ui.no_looks = このスロットにはまだ見た目がありません。マテリアルを変えるには、まず 1 つ作ります。見た目とはこのスロットのあり方の 1 つで、今あるマテリアルとの差分として保存されます。
+ui.add_look = + 新しい見た目
+ui.original = そのまま
+ui.variant_n = 見た目 {0}
+ui.look.name = 見た目の名前
+ui.look.name.tip = 状態に名前が無いとき、メニューにはこれが出ます。
+ui.look.worn_in = 使用箇所: {0}
+ui.look.worn_nowhere = この見た目はまだどこにも使われていません。メニューの表で選ぶか、スロットの通常の見た目にしてください。
+ui.back_to_slot = スロットに戻る
+ui.changes = {0} 件変更
+ui.unchanged = 変更なし
+ui.no_material = このスロットのマテリアルを読めないため、編集できるものがありません。
+
+# --- editing a material ---------------------------------------------------
+ui.changed_list_n = 変更点（{0} 件）
+ui.add_look.first = + 見た目を作って編集を始める
+ui.changed_list.help = 左がマテリアル本来の値、右がこの見た目で置き換わる値です。テクスチャ名をクリックすると元のファイルが見つかります。
+ui.value.tiling = タイリング {0} オフセット {1}
+ui.no_changes = まだ何も変えていません。下でマテリアルを編集するか、画像をドロップしてください。
+ui.reset_all = すべて戻す
+ui.reset_all.confirm = この見た目の変更をすべて捨てて、元のマテリアルに戻しますか？
+ui.reset_property = この項目を戻す
+ui.edit_material = マテリアル設定
+ui.edit_material.help = シェーダー自身のインスペクターです。ここでの変更は差分として保存され、ビルド時に複製へ適用されます。
 ui.render_queue = レンダーキュー
 ui.shader_changed = シェーダーを {0} に変更
 ui.keywords_changed = キーワードを変更
 
-warn.missing_renderer = レンダラーのないマテリアルスロットがあるためスキップしました。
-warn.missing_source = {0}: 元のマテリアルが見つからないためスキップしました。
-warn.slot_out_of_range = {0}: このレンダラーにスロット {1} は存在しないためスキップしました。
-warn.source_changed = {0}: スロットの中身が {1} に変わっています（変更時のマテリアルではありません）。変更は適用しますが結果を確認してください。
-warn.missing_property = {0}: シェーダーに {1} が存在しないため、この変更をスキップしました。
-warn.outside_avatar = {0} はこのアバターの中にありません。
-warn.locked_shader = {0} はロック済みの Poiyomi シェーダーです。テクスチャの変更は有効ですが、数値やトグルの変更はシェーダーに焼き込まれているため効きません。変更するにはマテリアルをアンロックしてください。
-
-conflict.two_components = {0} のスロット {1} が複数の Yuki Material コンポーネントから変更されています（{2}）。
-
-preview.name = Yuki Material
-
-# --- 重ね -----------------------------------------------------------------
-ui.overlays = 重ね
+# --- overlays -------------------------------------------------------------
+ui.overlays = オーバーレイ
+ui.overlays.help = 画像をマテリアル自身のテクスチャに統合します。画像編集ソフトでレイヤーを下地に結合するのと同じです。どのシェーダーでも使えます。
 ui.overlay.drop = ここに画像をドロップ、またはクリックして選択
 ui.overlay.empty = （画像なし）
-ui.overlay.result = 合成結果
-ui.overlays.help = 画像をマテリアル自身のテクスチャに統合します。画像編集ソフトでレイヤーを下地に統合するのと同じで、どのシェーダーでも動きます。
-ui.no_overlays = 重ねはまだありません。下に画像をドロップしてください。
-ui.add_overlay = 画像を追加
+ui.overlay.result = 重ねた結果
 ui.overlay.image = 画像
 ui.overlay.target = 統合先
 ui.overlay.target.BaseColor = ベースカラー
 ui.overlay.target.Emission = 発光
 ui.overlay.opacity = 不透明度
-ui.overlay.advanced = 詳細設定
+ui.overlay.advanced = 詳細
 ui.overlay.blend = ブレンド
 ui.overlay.blend.Normal = 通常
 ui.overlay.blend.Add = 加算
 ui.overlay.blend.Screen = スクリーン
 ui.overlay.blend.Multiply = 乗算
 ui.overlay.mask = マスク
-ui.overlay.mask.tip = この画像の白い部分だけに効きます。空なら全体に効きます。
-ui.overlay.tint = 着色
+ui.overlay.mask.tip = この画像の白い部分だけに適用します。空ならどこにでも。
+ui.overlay.tint = 色味
 ui.overlay.scale = スケール
 ui.overlay.offset = オフセット
 ui.overlay.property = テクスチャプロパティ
-ui.overlay.property.tip = 空にすると、統合先に応じた標準のプロパティを選びます。
+ui.overlay.property.tip = 空なら統合先に応じて一般的なプロパティを選びます。
 ui.overlay.move_up = 上へ
 ui.overlay.move_down = 下へ
-ui.overlay.order = レイヤーは上から下へ統合されます。
-warn.no_texture_slot = {0}: このシェーダーには {1} レイヤーを統合できるテクスチャがないため、スキップしました。
-warn.uv_mismatch = {0}: {1} は統合先のテクスチャと形状が異なります。重ね画像は特定の UV 用に描かれているため、結果を確認してください。
-info.emission_enabled = {0}: 発光がオフだったため、発光レイヤーが見えるように {1} をオンにしました。
+ui.overlay.order = レイヤーは上から順に統合されます。
 
-# --- バージョンとメニュー -------------------------------------------------
-ui.as_menu = メニューにする
-ui.as_menu.tip = 各マテリアルスロットのバージョンをエクスプレッションメニューにして、ゲーム内で切り替えられるようにします。
-ui.as_menu.help = 各マテリアルスロットがバージョンのサブメニューになり、ゲーム内で切り替えられます。スロットごとに同期 int を 1 つ使います。
-ui.permanent.help = 変更はアップロード時に適用され、切り替えはできません。メニューには入らず、パラメータも使いません。
-ui.menu_name = メニュー名
-ui.menu_name.tip = 空ならオブジェクト名を使います。
-ui.saved = 選択を保存
-ui.saved.tip = 選択をワールドやセッションをまたいで保持するか。
-ui.variants = バージョン
-ui.variants.help = このマテリアルスロットのバージョン。選ぶと編集でき、「試着」で Scene ビューに表示します。
-ui.variant_name = バージョン名
-ui.variant_n = バージョン {0}
-ui.add_variant = バージョンを追加
-ui.icon = アイコン
-ui.try_on = 試着
-ui.try_on.tip = このバージョンを Scene ビューに表示します。シーンには何も書き込みません。
-ui.stop_preview = 停止
-ui.set_default = デフォルトにする
-ui.badge.default = デフォルト
-ui.menu_parent = 追加先メニュー
-ui.menu_parent.tip = このメニューが表示される場所。空ならアバターのルートメニュー。メニューアセット、Modular Avatar のメニューアイテムを持つオブジェクト、または他の TsiYuki メニューを指定できます。
-warn.menu_parent_missing = {0}: {1} 自体はメニューを生成しないため、ルートメニューのままにします。
-warn.menu_cycle = {0}: {1} に入れるとメニューが自分自身を含むことになるため、ルートメニューのままにします。
-warn.no_install_target = {0}: この Modular Avatar には Menu Install Target がないため、ルートメニューのままにします。
+# --- problems -------------------------------------------------------------
+warn.missing_renderer = レンダラーの無いマテリアルスロットがあり、スキップしました。
+warn.missing_source = {0}: 元のマテリアルが見つからないため、このスロットをスキップしました。
+warn.slot_out_of_range = {0}: このレンダラーにスロット {1} はもう無いため、スキップしました。
+warn.source_changed = {0}: スロットには今 {1} が入っています。これらの見た目を作った時のマテリアルではありません。適用はしますが結果を確認してください。
+warn.missing_property = {0}: シェーダーにプロパティ {1} がもう無いため、その変更をスキップしました。
+warn.outside_avatar = {0} はこのアバターの中にありません。
+warn.locked_shader = {0} はロック済みの Poiyomi シェーダーです。テクスチャの変更は効きますが、数値やトグルの変更はシェーダーに焼き込まれているため効きません。変えるならマテリアルをアンロックしてください。
+warn.no_texture_slot = {0}: このシェーダーには {1} レイヤーを統合できるテクスチャが無いため、そのレイヤーをスキップしました。
+warn.uv_mismatch = {0}: {1} は統合先のテクスチャと形が違います。オーバーレイは 1 つの UV 配置を前提に描かれるので、結果を確認してください。
+info.emission_enabled = {0}: 発光がオフだったため、発光レイヤーを見せるために {1} をオンにしました。
+warn.menu_no_slots = {0}: このメニューはマテリアルスロットを 1 つも参照していないため、何も生成しません。
+warn.menu_one_state = {0}: メニューには切り替える意味のある状態が 2 つ以上必要なため、何も生成しません。
+warn.menu_changes_nothing = {0}: どの状態もすべてのスロットをそのままにしているため、何も生成しません。
+warn.menu_parent_missing = {0}: {1} は自分のメニューを作らないため、ルートメニューのままにします。
+warn.menu_cycle = {0}: {1} に入れるとメニューが自分自身の中に入ってしまうため、ルートメニューのままにします。
+warn.no_install_target = {0}: この Modular Avatar には Menu Install Target が無いため、メニューはルートメニューのままです。
+conflict.two_components = {0} のスロット {1} を複数の Yuki Material コンポーネントが持っています（{2}）。
+conflict.two_menus = {0} の {1} を複数のメニューが動かしています（{2}）。スロットが従えるメニューは 1 つだけです。
 
-# --- 概要ウィンドウ -------------------------------------------------------
-ui.avatar = アバター
-ui.pick_avatar = アバターを選んでください（その中のオブジェクトを選択しても構いません）。
-ui.window.empty = このアバターにはまだ Yuki Material コンポーネントがありません。
-ui.window.permanent = アップロード時に適用
-ui.window.menus = メニューに表示
-ui.window.summary = コンポーネント {0} 個、マテリアルスロット {1} 個、同期ビット {2}
-ui.window.bits = {0} ビット
-ui.window.installs_into = {0} に追加
-ui.window.versions = バージョン {0} 個
-ui.window.use_selection = 選択中を使う
-ui.window.add_to = {0} に追加
-ui.window.add_hint = 追加するにはアバター内のオブジェクトを選択してください
+preview.name = Yuki Material

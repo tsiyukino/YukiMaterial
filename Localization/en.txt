@@ -5,55 +5,129 @@ ui.not_in_avatar = This must be inside an avatar (no VRC Avatar Descriptor found
 ui.ok = OK
 ui.cancel = Cancel
 ui.remove = Remove
-ui.add = Add
 ui.reset = Reset
+ui.edit = Edit
+ui.duplicate = Copy
+ui.icon = Icon
+ui.select_object = Select
 
-ui.targets = Material slots
-ui.targets.help = Each row is one material slot on one renderer. Only the differences from the original material are stored; the original asset is never changed.
+# --- the panel ------------------------------------------------------------
+ui.avatar = Avatar
+ui.pick_avatar = Pick an avatar (or select any object inside one).
+ui.window.use_selection = Use selection
+ui.window.summary = {0} menu(s), {1} material slot(s), {2} synced bits
+ui.window.bits = {0} bits
+ui.nothing_selected = Pick a menu, or a material slot, on the left.
+ui.open_panel = Open the panel
+ui.open_panel.help = Looks are edited in the panel, where the other objects a menu reaches are visible too. This component only holds what this object's slots can look like.
+ui.open_panel.menu_help = A menu is a table: its states down the side, the slots it drives across the top. That is drawn in the panel.
+
+ui.tree.menus = Menus
+ui.tree.no_menus = No menus yet. A menu is what switches looks in game.
+ui.tree.new_menu = + New menu
+ui.tree.objects = Objects
+ui.tree.no_objects = No objects set up yet.
+ui.tree.add_object = + Add {0}
+ui.tree.add_hint = Select an object inside this avatar
+
+# --- one menu -------------------------------------------------------------
+ui.menu_name = Menu name
+ui.menu_name.tip = Empty uses the object name.
+ui.saved = Remember the choice
+ui.saved.tip = Whether the selection persists across worlds and sessions.
+ui.menu_parent = Install into
+ui.menu_parent.tip = Which menu this appears in. Empty is the avatar's root menu. Takes a menu asset, an object with a Modular Avatar menu item, or another TsiYuki menu.
+ui.menu.advanced = Advanced
+ui.menu.parameter = Parameter name
+ui.menu.parameter.tip = Empty builds one from the component, which survives renaming. Two menus given the same name share one parameter and switch together.
+ui.menu.parameter.current = In use: {0}
+ui.menu.cost = Costs one synced int (8 bits), however many slots it moves.
+ui.menu.states_n = {0} state(s)
+ui.menu.slots_n = {0} slot(s)
+ui.menu.remove.confirm = Delete the menu "{0}"? The looks themselves are kept on their objects.
+
+ui.table.title = States
+ui.table.help = One row is one thing the menu can be set to; one column is one material slot it drives. The cell says what that slot wears in that state — the material it already has, unless you pick otherwise. Slots on different objects are what makes the hair and the ears change together.
+ui.table.state = State
+ui.table.empty = This menu drives no slots yet. Add the material slots it should move — they can be on any object in the avatar.
+ui.tree.drop = Drop an object from the Hierarchy here
+ui.table.drop = + Add a material slot — or drop one from the list, or an object from the Hierarchy
+ui.table.add_state = + Add a state
+ui.table.new_look = + New look…
+ui.table.no_slots = Every slot is already driven by a menu.
+
+ui.column.tip = Click to open this slot.
+ui.column.missing = (slot is gone)
+ui.column.unresolved = not usable
+ui.column.move_left = Move left
+ui.column.move_right = Move right
+ui.column.select = Select the object
+ui.column.remove = Remove from this menu
+ui.state.move_up = Move up
+ui.state.move_down = Move down
+ui.state.duplicate = Duplicate
+ui.state_n = State {0}
+ui.set_default = Start here
+ui.badge.default = Start
+ui.try_on = Try on
+ui.try_on.tip = Shows this state in the Scene view, across every slot the menu drives. Nothing is written to the scene.
+ui.stop_preview = Stop
+
+# --- one material slot ----------------------------------------------------
+ui.slot = Slot {0}
+ui.display_name = Name
+ui.display_name.tip = Shown in the panel. Empty uses the material name.
+ui.remove_slot = Remove slot
+ui.slot.driven_by = Driven by the menu "{0}"
+ui.slot.not_driven = No menu drives this slot.
+ui.slot.open_menu = Open the menu
+ui.slot.permanent = Applied on upload
+ui.slot.base = Wears
+ui.slot.base.tip = What the slot wears when nothing switches it.
+ui.slot.base.help = With no menu on it, this is what the built avatar wears — which is how a change is made permanent.
+ui.slot.base.driven = A menu drives this slot, so the avatar spawns in whatever the menu's starting state says.
 ui.no_targets = No material slots yet.
 ui.fill_from_object = Fill from this object
 ui.fill_from_object.tip = Adds every material slot of the renderers on this object. Delete the rows you do not need.
-ui.add_target = Add a material slot
-ui.select_object = Select
-ui.display_name = Name
-ui.display_name.tip = Shown in this list. Empty uses the material name.
-ui.slot = Slot {0}
-ui.source = Original
-ui.edited = Edited
-ui.unchanged = Unchanged
+
+# --- looks ----------------------------------------------------------------
+ui.looks = Looks
+ui.looks.help = What this slot can look like. Pick one to edit it through the shader's own inspector; only the difference from the material already in the slot is stored, so the material asset is never touched.
+ui.looks_n = {0} look(s)
+ui.no_looks = This slot has no looks yet. Changing its material starts with making one: a look is one way this slot can look, kept as the difference from the material it already has.
+ui.add_look = + New look
+ui.original = As it is
+ui.variant_n = Look {0}
+ui.look.name = Look name
+ui.look.name.tip = Shown in the menu when a state has no name of its own.
+ui.look.worn_in = Worn in: {0}
+ui.look.worn_nowhere = Nothing wears this look yet. Pick it in a menu's table, or make it the slot's own look.
+ui.back_to_slot = Back to the slot
 ui.changes = {0} changed
-ui.no_changes = Nothing changed yet. Edit the material below.
+ui.unchanged = Unchanged
+ui.no_material = This slot's material cannot be read, so there is nothing to edit.
+
+# --- editing a material ---------------------------------------------------
+ui.changed_list_n = Changed ({0})
+ui.add_look.first = + Make a look and start editing
+ui.changed_list.help = What the material had, and what this look puts there instead. Click a texture to find the file it came from.
+ui.value.tiling = tiling {0} offset {1}
+ui.no_changes = Nothing changed yet. Edit the material below, or drop an image on it.
 ui.reset_all = Reset everything
-ui.reset_all.confirm = Discard every change on this material and go back to the original?
+ui.reset_all.confirm = Discard every change in this look and go back to the material as it is?
 ui.reset_property = Reset this property
-ui.changed_list = Changed
 ui.edit_material = Material settings
 ui.edit_material.help = This is the shader's own inspector. Anything you change here is stored as a difference and applied to a copy at build time.
-
 ui.render_queue = Render queue
 ui.shader_changed = Shader replaced with {0}
 ui.keywords_changed = Keywords changed
 
-warn.missing_renderer = A material slot has no renderer and is skipped.
-warn.missing_source = {0}: the original material is missing and the slot is skipped.
-warn.slot_out_of_range = {0}: slot {1} does not exist on this renderer any more and is skipped.
-warn.source_changed = {0}: the slot now holds {1}, not the material these changes were made against. The changes are applied anyway; check the result.
-warn.missing_property = {0}: the shader has no property {1} any more, so that change is skipped.
-warn.outside_avatar = {0} is not inside this avatar.
-warn.locked_shader = {0} uses a locked Poiyomi shader. Texture changes work; numeric and toggle changes were baked into the shader and will do nothing. Unlock the material to change them.
-
-conflict.two_components = {0} slot {1} is changed by more than one Yuki Material component ({2}).
-
-preview.name = Yuki Material
-
 # --- overlays -------------------------------------------------------------
 ui.overlays = Overlays
+ui.overlays.help = Images merged into the material's own textures, the way you would flatten a layer onto the base in an image editor. Works with any shader.
 ui.overlay.drop = Drop images here, or click to pick one
 ui.overlay.empty = (no image)
 ui.overlay.result = What the layers add up to
-ui.overlays.help = Images merged into the material's own textures, the way you would flatten a layer onto the base in an image editor. Works with any shader.
-ui.no_overlays = No overlays. Drop an image below.
-ui.add_overlay = Add an image
 ui.overlay.image = Image
 ui.overlay.target = Merge into
 ui.overlay.target.BaseColor = Base colour
@@ -75,46 +149,25 @@ ui.overlay.property.tip = Leave empty to pick the usual property for the chosen 
 ui.overlay.move_up = Move up
 ui.overlay.move_down = Move down
 ui.overlay.order = Layers are merged top to bottom.
+
+# --- problems -------------------------------------------------------------
+warn.missing_renderer = A material slot has no renderer and is skipped.
+warn.missing_source = {0}: the original material is missing and the slot is skipped.
+warn.slot_out_of_range = {0}: slot {1} does not exist on this renderer any more and is skipped.
+warn.source_changed = {0}: the slot now holds {1}, not the material these looks were made against. They are applied anyway; check the result.
+warn.missing_property = {0}: the shader has no property {1} any more, so that change is skipped.
+warn.outside_avatar = {0} is not inside this avatar.
+warn.locked_shader = {0} uses a locked Poiyomi shader. Texture changes work; numeric and toggle changes were baked into the shader and will do nothing. Unlock the material to change them.
 warn.no_texture_slot = {0}: this shader has no texture to merge a {1} layer into, so that layer is skipped.
 warn.uv_mismatch = {0}: {1} has a different shape from the texture it is merged into. Overlays are drawn for one UV layout, so check the result.
 info.emission_enabled = {0}: glow was switched off, so {1} was turned on for the glow layer to show.
-
-# --- versions and menus ---------------------------------------------------
-ui.as_menu = Make a menu
-ui.as_menu.tip = Turns the versions of each material slot into an expression menu, so they can be switched in game.
-ui.as_menu.help = Each material slot becomes a submenu of versions, switched in game. Costs one synced int per slot.
-ui.permanent.help = The change is applied on upload and cannot be switched. Nothing is added to the menu and no parameter is used.
-ui.menu_name = Menu name
-ui.menu_name.tip = Empty uses the object name.
-ui.saved = Remember the choice
-ui.saved.tip = Whether the selection persists across worlds and sessions.
-ui.variants = Versions
-ui.variants.help = Versions of this material slot. Pick one to edit it; Try on shows it in the Scene view.
-ui.variant_name = Version name
-ui.variant_n = Version {0}
-ui.add_variant = Add a version
-ui.icon = Icon
-ui.try_on = Try on
-ui.try_on.tip = Shows this version in the Scene view. Nothing is written to the scene.
-ui.stop_preview = Stop
-ui.set_default = Make default
-ui.badge.default = Default
-ui.menu_parent = Install into
-ui.menu_parent.tip = Which menu this appears in. Empty is the avatar's root menu. Takes a menu asset, an object with a Modular Avatar menu item, or another TsiYuki menu.
+warn.menu_no_slots = {0}: this menu drives no material slots, so nothing is built for it.
+warn.menu_one_state = {0}: a menu needs at least two states to be worth switching between, so nothing is built for it.
+warn.menu_changes_nothing = {0}: every state leaves every slot as it is, so nothing is built for it.
 warn.menu_parent_missing = {0}: {1} makes no menu of its own, so this stays in the root menu.
 warn.menu_cycle = {0}: installing into {1} would put a menu inside itself, so this stays in the root menu.
 warn.no_install_target = {0}: this Modular Avatar version has no Menu Install Target, so the menu stays in the root menu.
+conflict.two_components = {0} slot {1} is held by more than one Yuki Material component ({2}).
+conflict.two_menus = {0}'s {1} is driven by more than one menu ({2}). A slot can only answer to one.
 
-# --- overview window ------------------------------------------------------
-ui.avatar = Avatar
-ui.pick_avatar = Pick an avatar (or select any object inside one).
-ui.window.empty = This avatar has no Yuki Material components yet.
-ui.window.permanent = Applied on upload
-ui.window.menus = In the menu
-ui.window.summary = {0} component(s), {1} material slot(s), {2} synced bits
-ui.window.bits = {0} bits
-ui.window.installs_into = installs into {0}
-ui.window.versions = {0} version(s)
-ui.window.use_selection = Use selection
-ui.window.add_to = Add to {0}
-ui.window.add_hint = Select an object inside this avatar to add one
+preview.name = Yuki Material

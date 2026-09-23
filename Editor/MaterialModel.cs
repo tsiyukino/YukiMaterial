@@ -17,56 +17,110 @@ namespace TsiYuki.Materials.Editor
             Args = args;
         }
 
-        public string Message => MaterialText.L.Tr(Key, Args);
+        public string Message { get { return MaterialText.L.Tr(Key, Args); } }
     }
 
-    /// <summary>One material slot that is actually going to be patched.</summary>
-    public class ResolvedTarget
+    /// <summary>One material slot that exists, checked and ready to be patched.</summary>
+    public class ResolvedSlot
     {
         public YukiMaterial Config;
-        public MaterialTarget Source;
+        public MaterialTarget Target;
         public Renderer Renderer;
         public int Slot;
 
-        // What sits in the slot right now. The edit is applied on top of this,
-        // not on top of the material it was authored against, so a slot another
-        // tool already changed still gets the edit.
+        // What sits in the slot right now. Looks are applied on top of this, not
+        // on top of the material they were authored against, so a slot another
+        // tool already changed still gets the change.
         public UnityEngine.Material Original;
-        public MaterialEdit Edit;
         public string DisplayName;
 
-        // Every version of this slot, in menu order. A component that applies
-        // its change permanently has exactly one and uses Edit.
-        public List<MaterialVariant> Variants = new List<MaterialVariant>();
-        public MaterialVariant Default;
+        /// <summary>The menu that drives it, or null when nothing does.</summary>
+        public ResolvedMenu Menu;
 
-        public string Key => Renderer.GetInstanceID() + "#" + Slot;
+        /// <summary>What the states name it by.</summary>
+        public string Key { get { return YukiMaterialMenu.KeyOf(Config, Target.id); } }
 
-        /// <summary>Synced int that picks the version. Built from ids, never
-        /// from names, so renaming keeps saved selections.</summary>
-        public string ParameterName;
+        /// <summary>The physical slot, for spotting two components on one.</summary>
+        public string Physical { get { return Renderer.GetInstanceID() + "#" + Slot; } }
 
-        public string VariantName(MaterialVariant variant) =>
-            MaterialModel.Fallback(variant.displayName, MaterialText.L.Tr("ui.variant_n", Variants.IndexOf(variant) + 1));
+        public string ObjectName { get { return Renderer != null ? Renderer.gameObject.name : "?"; } }
     }
 
-    /// <summary>One YukiMaterial component resolved for a build or for display.</summary>
-    public class MaterialModel
+    /// <summary>One thing a menu can be set to.</summary>
+    public class ResolvedState
     {
-        public YukiMaterial Config;
-        public List<ResolvedTarget> Targets = new List<ResolvedTarget>();
-        public List<ModelWarning> Warnings = new List<ModelWarning>();
+        public MaterialState Source;
+        public string DisplayName;
+        public Texture2D Icon;
+        public int Value;
+    }
 
-        public string MenuName;
-        public Texture2D MenuIcon;
-        public bool AsMenu;
+    /// <summary>
+    /// One menu: the slots it drives and the states it switches them between.
+    ///
+    /// One menu is one synced int and one submenu, however many slots and
+    /// however many objects it reaches across.
+    /// </summary>
+    public class ResolvedMenu
+    {
+        public YukiMaterialMenu Config;
+        public string DisplayName;
+        public Texture2D Icon;
+        public string ParameterName;
         public bool Saved;
 
-        /// <summary>One synced int per slot, eight bits each.</summary>
-        public int TotalBits => AsMenu ? Targets.Count * 8 : 0;
+        public List<ResolvedSlot> Slots = new List<ResolvedSlot>();
+        public List<ResolvedState> States = new List<ResolvedState>();
+        public ResolvedState Default;
 
-        public static string Fallback(string value, string fallback) =>
-            string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        /// <summary>The look that slot wears in that state; null is the
+        /// material the slot already has.</summary>
+        public MaterialVariant Wears(ResolvedSlot slot, ResolvedState state)
+        {
+            if (slot == null || state == null) return null;
+            return slot.Target.Find(state.Source.Wears(slot.Key));
+        }
+    }
+
+    /// <summary>
+    /// Everything Yuki Material is doing to one avatar, resolved together: the
+    /// catalogues, the menus that point into them, and the slots that change
+    /// on upload because nothing switches them.
+    /// </summary>
+    public class MaterialSet
+    {
+        public Transform AvatarRoot;
+        public List<YukiMaterial> Catalogues = new List<YukiMaterial>();
+        public List<YukiMaterialMenu> MenuComponents = new List<YukiMaterialMenu>();
+        public List<ResolvedMenu> Menus = new List<ResolvedMenu>();
+
+        /// <summary>Every slot that survived checking, menu or not.</summary>
+        public List<ResolvedSlot> Slots = new List<ResolvedSlot>();
+        public List<ModelWarning> Warnings = new List<ModelWarning>();
+        public List<ModelWarning> Errors = new List<ModelWarning>();
+
+        /// <summary>One synced int per menu.</summary>
+        public int TotalBits { get { return Menus.Count * 8; } }
+
+        /// <summary>Slots that change on upload with nothing to switch them.</summary>
+        public IEnumerable<ResolvedSlot> Permanent
+        {
+            get { return Slots.Where(s => s.Menu == null && s.Target.ChangesOnItsOwn); }
+        }
+
+        public ResolvedSlot Find(YukiMaterial config, string targetId)
+        {
+            foreach (var slot in Slots)
+                if (slot.Config == config && slot.Target.id == targetId) return slot;
+            return null;
+        }
+
+        // ---------------------------------------------------------- naming
+
+        public static string Fallback(string value, string fallback)
+        {
+            return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        }
 
         public static string NameOf(MaterialTarget target)
         {
@@ -75,19 +129,66 @@ namespace TsiYuki.Materials.Editor
             return Fallback(target.displayName, material != null ? material.name : "?");
         }
 
-        public static MaterialModel Resolve(YukiMaterial config, Transform avatarRoot)
+        public static string NameOf(YukiMaterialMenu menu)
         {
-            var model = new MaterialModel { Config = config };
-            if (config == null) return model;
+            if (menu == null) return "?";
+            return Fallback(menu.displayName, menu.gameObject.name);
+        }
 
-            model.AsMenu = config.asMenu;
-            model.Saved = config.saved;
-            model.MenuIcon = config.icon;
-            model.MenuName = Fallback(config.displayName, config.gameObject.name);
-            var prefix = !string.IsNullOrWhiteSpace(config.parameterName)
-                ? config.parameterName.Trim()
-                : "Material/" + config.id;
+        /// <summary>The name of a look, with the untouched material as the one
+        /// every slot has without being given it.</summary>
+        public static string NameOf(MaterialTarget target, MaterialVariant variant)
+        {
+            if (variant == null) return MaterialText.L["ui.original"];
+            int index = target != null ? target.variants.IndexOf(variant) + 1 : 1;
+            return Fallback(variant.displayName, MaterialText.L.Tr("ui.variant_n", index));
+        }
 
+        public static string NameOf(MaterialState state, int index)
+        {
+            if (state == null) return "?";
+            return Fallback(state.displayName, MaterialText.L.Tr("ui.state_n", index));
+        }
+
+        // ------------------------------------------------------- resolution
+
+        public static MaterialSet Resolve(Transform avatarRoot)
+        {
+            var set = new MaterialSet { AvatarRoot = avatarRoot };
+            if (avatarRoot == null) return set;
+
+            foreach (var config in avatarRoot.GetComponentsInChildren<YukiMaterial>(true))
+            {
+                if (config == null) continue;
+                config.EnsureIds();
+                set.Catalogues.Add(config);
+                set.ResolveSlots(config);
+            }
+
+            // Two components on one physical slot: neither can be trusted to
+            // win, so it is reported rather than resolved.
+            foreach (var group in set.Slots.GroupBy(s => s.Physical))
+            {
+                var owners = group.Select(s => s.Config).Distinct().ToList();
+                if (owners.Count < 2) continue;
+                var first = group.First();
+                set.Errors.Add(new ModelWarning("conflict.two_components", first.Renderer,
+                    first.ObjectName, first.Slot,
+                    string.Join(", ", owners.Select(c => c.gameObject.name).ToArray())));
+            }
+
+            foreach (var menu in avatarRoot.GetComponentsInChildren<YukiMaterialMenu>(true))
+            {
+                if (menu == null) continue;
+                menu.EnsureIds();
+                set.MenuComponents.Add(menu);
+                set.ResolveMenu(menu);
+            }
+            return set;
+        }
+
+        void ResolveSlots(YukiMaterial config)
+        {
             foreach (var target in config.targets)
             {
                 if (target == null) continue;
@@ -95,96 +196,133 @@ namespace TsiYuki.Materials.Editor
 
                 if (target.renderer == null)
                 {
-                    model.Warnings.Add(new ModelWarning("warn.missing_renderer", config));
+                    Warnings.Add(new ModelWarning("warn.missing_renderer", config));
                     continue;
                 }
-                if (avatarRoot != null && !target.renderer.transform.IsChildOf(avatarRoot))
+                if (AvatarRoot != null && !target.renderer.transform.IsChildOf(AvatarRoot))
                 {
-                    model.Warnings.Add(new ModelWarning("warn.outside_avatar", target.renderer, target.renderer.name));
+                    Warnings.Add(new ModelWarning("warn.outside_avatar", target.renderer, target.renderer.name));
                     continue;
                 }
 
                 var slots = target.renderer.sharedMaterials;
                 if (target.slot < 0 || target.slot >= slots.Length)
                 {
-                    model.Warnings.Add(new ModelWarning("warn.slot_out_of_range", target.renderer, name, target.slot));
+                    Warnings.Add(new ModelWarning("warn.slot_out_of_range", target.renderer, name, target.slot));
                     continue;
                 }
 
                 var current = slots[target.slot];
                 if (current == null)
                 {
-                    model.Warnings.Add(new ModelWarning("warn.missing_source", target.renderer, name));
+                    Warnings.Add(new ModelWarning("warn.missing_source", target.renderer, name));
                     continue;
                 }
                 if (target.source != null && current != target.source)
-                    model.Warnings.Add(new ModelWarning("warn.source_changed", target.renderer, name, current.name));
-
-                var variants = target.variants.Where(v => v != null && v.edit != null).ToList();
-                var variant = target.First;
-                var edit = variant != null ? variant.edit : null;
-
-                // A menu keeps its slot even when the first version changes
-                // nothing, because that is exactly what an "original" option is.
-                bool anything = config.asMenu ? variants.Count > 1 : (edit != null && !edit.IsEmpty);
-                if (!anything) continue;
+                    Warnings.Add(new ModelWarning("warn.source_changed", target.renderer, name, current.name));
 
                 if (MaterialDiff.IsLockedPoiyomi(current) &&
-                    variants.Any(v => v.edit.properties.Any(p => p != null && p.kind != PropertyKind.Texture)))
-                    model.Warnings.Add(new ModelWarning("warn.locked_shader", current, name));
+                    target.variants.Any(v => v != null && v.edit != null &&
+                                             v.edit.properties.Any(p => p != null && p.kind != PropertyKind.Texture)))
+                    Warnings.Add(new ModelWarning("warn.locked_shader", current, name));
 
-                var chosen = variants.FirstOrDefault(v => v.id == target.defaultVariant) ?? variants.FirstOrDefault();
-
-                model.Targets.Add(new ResolvedTarget
+                Slots.Add(new ResolvedSlot
                 {
                     Config = config,
-                    Source = target,
+                    Target = target,
                     Renderer = target.renderer,
                     Slot = target.slot,
                     Original = current,
-                    Edit = edit,
                     DisplayName = name,
-                    Variants = variants,
-                    Default = chosen,
-                    ParameterName = prefix + "/" + target.id,
                 });
             }
-            return model;
-        }
-    }
-
-    /// <summary>Every YukiMaterial on one avatar, resolved together so two of
-    /// them claiming the same slot can be reported.</summary>
-    public class MaterialSet
-    {
-        public Transform AvatarRoot;
-        public List<MaterialModel> Models = new List<MaterialModel>();
-
-        public IEnumerable<ResolvedTarget> AllTargets => Models.SelectMany(m => m.Targets);
-
-        public static MaterialSet Resolve(Transform avatarRoot)
-        {
-            var set = new MaterialSet { AvatarRoot = avatarRoot };
-            foreach (var config in avatarRoot.GetComponentsInChildren<YukiMaterial>(true))
-            {
-                config.EnsureIds();
-                set.Models.Add(MaterialModel.Resolve(config, avatarRoot));
-            }
-            return set;
         }
 
-        /// <summary>Slots claimed by more than one component.</summary>
-        public IEnumerable<ModelWarning> Conflicts()
+        void ResolveMenu(YukiMaterialMenu menu)
         {
-            foreach (var group in AllTargets.GroupBy(t => t.Key))
+            var label = NameOf(menu);
+            var resolved = new ResolvedMenu
             {
-                var components = group.Select(t => t.Config).Distinct().ToList();
-                if (components.Count < 2) continue;
-                var first = group.First();
-                yield return new ModelWarning("conflict.two_components", first.Renderer,
-                    first.Renderer.name, first.Slot,
-                    string.Join(", ", components.Select(c => c.gameObject.name)));
+                Config = menu,
+                DisplayName = label,
+                Icon = menu.icon,
+                Saved = menu.saved,
+                ParameterName = !string.IsNullOrWhiteSpace(menu.parameterName)
+                    ? menu.parameterName.Trim()
+                    : "Material/" + menu.id,
+            };
+
+            foreach (var slot in menu.slots)
+            {
+                if (slot == null || slot.IsBroken) continue;
+                var found = Find(slot.source, slot.targetId);
+                if (found == null)
+                {
+                    // Already reported where the slot itself failed; saying it
+                    // twice for every menu that points at it helps nobody.
+                    continue;
+                }
+                if (found.Menu != null)
+                {
+                    Errors.Add(new ModelWarning("conflict.two_menus", menu,
+                        found.ObjectName, found.DisplayName,
+                        NameOf(found.Menu.Config) + ", " + label));
+                    continue;
+                }
+                found.Menu = resolved;
+                resolved.Slots.Add(found);
             }
+
+            for (int i = 0; i < menu.states.Count; i++)
+            {
+                var state = menu.states[i];
+                if (state == null) continue;
+                resolved.States.Add(new ResolvedState
+                {
+                    Source = state,
+                    DisplayName = NameOf(state, i + 1),
+                    Icon = state.icon,
+                    Value = state.value,
+                });
+            }
+            resolved.Default = resolved.States.FirstOrDefault(s => s.Source == menu.Default)
+                               ?? resolved.States.FirstOrDefault();
+
+            if (resolved.Slots.Count == 0)
+            {
+                Warnings.Add(new ModelWarning("warn.menu_no_slots", menu, label));
+                Release(resolved);
+                return;
+            }
+            if (resolved.States.Count < 2)
+            {
+                Warnings.Add(new ModelWarning("warn.menu_one_state", menu, label));
+                Release(resolved);
+                return;
+            }
+            // Every state putting every slot back where it found it is a menu
+            // that switches between one thing and the same thing.
+            bool moves = resolved.States.Any(state => resolved.Slots.Any(slot =>
+            {
+                var variant = resolved.Wears(slot, state);
+                return variant != null && variant.Changes;
+            }));
+            if (!moves)
+            {
+                Warnings.Add(new ModelWarning("warn.menu_changes_nothing", menu, label));
+                Release(resolved);
+                return;
+            }
+
+            Menus.Add(resolved);
+        }
+
+        /// <summary>A menu that will not be built lets go of its slots, so they
+        /// are free to change on upload or to be driven by another menu.</summary>
+        static void Release(ResolvedMenu menu)
+        {
+            foreach (var slot in menu.Slots) slot.Menu = null;
+            menu.Slots.Clear();
         }
     }
 }

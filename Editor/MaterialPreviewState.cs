@@ -4,23 +4,21 @@ using nadena.dev.ndmf.preview;
 namespace TsiYuki.Materials.Editor
 {
     /// <summary>
-    /// Which version of each material slot the Scene view is showing.
+    /// Which state each menu is being tried on in.
     ///
-    /// A component that applies its change permanently has nothing to choose, so
-    /// it is previewed as it is. A component that turns its versions into a menu
-    /// shows the default one, and "Try on" points this somewhere else — the same
-    /// deal as the wardrobe, where seeing another outfit is something you ask
-    /// for rather than something that happens while you edit.
+    /// A slot no menu drives is previewed as it will be built — there is only
+    /// one answer, so asking would be pointless. A slot a menu drives shows the
+    /// state the avatar spawns in, and "Try on" points the whole menu somewhere
+    /// else, which moves every slot the menu drives at once: seeing another look
+    /// is something you ask for rather than something that happens while you
+    /// edit, the same deal as the wardrobe.
     /// </summary>
     internal static class MaterialPreviewState
     {
         // NDMF can only observe a value that compares by equality, so the table
-        // is carried as text rather than a dictionary: "slot=version|slot=version".
+        // is carried as text rather than a dictionary: "menu=state|menu=state".
         static readonly PublishedValue<string> Selected =
             new PublishedValue<string>("", "Yuki Material preview");
-
-        public static string Key(YukiMaterial config, MaterialTarget target) =>
-            (config != null ? config.id : "?") + "/" + (target != null ? target.id : "?");
 
         /// <summary>Reads the table and makes the caller re-run when it changes.</summary>
         public static void Observe(ComputeContext context) => context.Observe(Selected);
@@ -45,21 +43,27 @@ namespace TsiYuki.Materials.Editor
             return string.Join("|", parts.ToArray());
         }
 
-        public static string Current(YukiMaterial config, MaterialTarget target)
+        /// <summary>The state this menu is being tried on in, or null for the
+        /// one the avatar spawns in.</summary>
+        public static MaterialState Current(YukiMaterialMenu menu)
         {
+            if (menu == null) return null;
             string id;
-            return Parse(Selected.Value).TryGetValue(Key(config, target), out id) ? id : null;
+            if (!Parse(Selected.Value).TryGetValue(menu.id, out id)) return null;
+            return menu.FindState(id);
         }
 
-        public static bool IsShowing(YukiMaterial config, MaterialTarget target, MaterialVariant variant) =>
-            variant != null && Current(config, target) == variant.id;
-
-        /// <summary>Null goes back to the version the avatar spawns with.</summary>
-        public static void Show(YukiMaterial config, MaterialTarget target, MaterialVariant variant)
+        public static bool IsShowing(YukiMaterialMenu menu, MaterialState state)
         {
+            return menu != null && state != null && Current(menu) == state;
+        }
+
+        /// <summary>Null goes back to the state the avatar spawns in.</summary>
+        public static void Show(YukiMaterialMenu menu, MaterialState state)
+        {
+            if (menu == null) return;
             var table = Parse(Selected.Value);
-            var key = Key(config, target);
-            if (variant == null) table.Remove(key); else table[key] = variant.id;
+            if (state == null) table.Remove(menu.id); else table[menu.id] = state.id;
             Selected.Value = Write(table);
         }
 

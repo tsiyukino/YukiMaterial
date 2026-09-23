@@ -74,7 +74,7 @@ namespace TsiYuki.Materials
         // Empty resolves from `target` against the material's shader.
         public string property = "";
 
-        public bool IsActive => enabled && texture != null && opacity > 0.001f;
+        public bool IsActive { get { return enabled && texture != null && opacity > 0.001f; } }
     }
 
     /// <summary>
@@ -97,9 +97,14 @@ namespace TsiYuki.Materials
         // material's textures are by then.
         public List<OverlayLayer> overlays = new List<OverlayLayer>();
 
-        public bool IsEmpty =>
-            shader == null && properties.Count == 0 && !overrideRenderQueue &&
-            enableKeywords.Count == 0 && disableKeywords.Count == 0 && overlays.Count == 0;
+        public bool IsEmpty
+        {
+            get
+            {
+                return shader == null && properties.Count == 0 && !overrideRenderQueue &&
+                       enableKeywords.Count == 0 && disableKeywords.Count == 0 && overlays.Count == 0;
+            }
+        }
 
         public bool HasOverlays
         {
@@ -110,9 +115,14 @@ namespace TsiYuki.Materials
             }
         }
 
-        public int Count =>
-            properties.Count + (overrideRenderQueue ? 1 : 0) + (shader != null ? 1 : 0) +
-            enableKeywords.Count + disableKeywords.Count + overlays.Count;
+        public int Count
+        {
+            get
+            {
+                return properties.Count + (overrideRenderQueue ? 1 : 0) + (shader != null ? 1 : 0) +
+                       enableKeywords.Count + disableKeywords.Count + overlays.Count;
+            }
+        }
 
         public MaterialPropertyValue Find(string propertyName)
         {
@@ -123,20 +133,35 @@ namespace TsiYuki.Materials
     }
 
     /// <summary>
-    /// One version of a material slot. Until menus exist a target has exactly
-    /// one variant, which is always applied.
+    /// One look a material slot can wear: a name and the difference from the
+    /// material the slot already holds.
+    ///
+    /// A look whose difference is empty is that material itself. Every slot can
+    /// always wear it without one being stored, which is why the original is
+    /// spelled as the empty id rather than as an entry in the list: nothing can
+    /// delete it, rename it, or edit it into something else.
     /// </summary>
     [Serializable]
     public class MaterialVariant
     {
+        /// <summary>The id of the untouched material: no look at all.</summary>
+        public const string Original = "";
+
         public string id = "";
         public string displayName = "";
         public Texture2D icon;
-        public int value = 1;
         public MaterialEdit edit = new MaterialEdit();
+
+        public bool Changes { get { return edit != null && !edit.IsEmpty; } }
     }
 
-    /// <summary>One material slot on one renderer, and the versions of it.</summary>
+    /// <summary>
+    /// One material slot on one renderer, and the looks made for it.
+    ///
+    /// The slot knows nothing about menus. It is a catalogue: this slot can look
+    /// like this, or like that. What picks between them — a menu somewhere else
+    /// on the avatar, or nothing at all — is not its business.
+    /// </summary>
     [Serializable]
     public class MaterialTarget
     {
@@ -152,48 +177,60 @@ namespace TsiYuki.Materials
         public Texture2D icon;
 
         public List<MaterialVariant> variants = new List<MaterialVariant>();
-        public string defaultVariant = "";
-        public int nextValue = 1;
 
-        public MaterialVariant First => variants.Count > 0 ? variants[0] : null;
+        /// <summary>
+        /// What the slot wears when nothing switches it: the empty id is the
+        /// material it already holds. A slot no menu drives wears this on the
+        /// built avatar, which is how a change is made permanent.
+        /// </summary>
+        public string baseVariant = MaterialVariant.Original;
+
+        public MaterialVariant Find(string variantId)
+        {
+            if (string.IsNullOrEmpty(variantId)) return null;
+            foreach (var variant in variants)
+                if (variant != null && variant.id == variantId) return variant;
+            return null;
+        }
+
+        /// <summary>Whether anything here would change the built avatar on its
+        /// own, menus aside.</summary>
+        public bool ChangesOnItsOwn
+        {
+            get
+            {
+                var variant = Find(baseVariant);
+                return variant != null && variant.Changes;
+            }
+        }
     }
 
+    /// <summary>
+    /// What one object's material slots can look like.
+    ///
+    /// This component is a catalogue and nothing else: slots, and the looks made
+    /// for them. Switching between looks in game is a menu's job, and a menu
+    /// refers to these slots from wherever it lives — so the hair and the ears
+    /// keep their own looks on their own objects and still change together.
+    /// </summary>
     [AddComponentMenu("TsiYuki/Yuki Material")]
     [DisallowMultipleComponent]
     public class YukiMaterial : MonoBehaviour, IEditorOnly
     {
         public string id = "";
 
-        // Menu label; empty uses the object name. Unused until menus exist.
-        public string displayName = "";
-        public Texture2D icon;
-
-        // Reserved: when true the variants become an expression menu instead of
-        // being applied permanently.
-        public bool asMenu = false;
-        public bool saved = true;
-        public string parameterName = "";
-
-        // Where this menu is installed; null is the avatar's root menu. Takes a
-        // VRCExpressionsMenu asset, an object carrying a Modular Avatar menu
-        // item, or another TsiYuki component that makes a menu. Held loosely so
-        // the runtime assembly needs none of those types.
-        public UnityEngine.Object menuParent;
-
         public List<MaterialTarget> targets = new List<MaterialTarget>();
 
         public MaterialTarget FindTarget(string targetId)
         {
-            foreach (var t in targets)
-                if (t != null && t.id == targetId) return t;
+            if (string.IsNullOrEmpty(targetId)) return null;
+            foreach (var target in targets)
+                if (target != null && target.id == targetId) return target;
             return null;
         }
 
-        /// <summary>
-        /// Gives the component, every target and every variant a stable id, and
-        /// makes sure each target has at least one variant. Returns true when
-        /// anything changed.
-        /// </summary>
+        /// <summary>Gives the component, every slot and every look a stable id.
+        /// Returns true when anything changed.</summary>
         public bool EnsureIds()
         {
             bool changed = false;
@@ -208,11 +245,6 @@ namespace TsiYuki.Materials
                     target.id = Unique(used);
                     changed = true;
                 }
-                if (target.variants.Count == 0)
-                {
-                    target.variants.Add(new MaterialVariant { id = NewId(), value = target.nextValue++ });
-                    changed = true;
-                }
 
                 var variantIds = new HashSet<string>();
                 foreach (var variant in target.variants)
@@ -224,6 +256,7 @@ namespace TsiYuki.Materials
                         changed = true;
                     }
                     if (variant.edit == null) { variant.edit = new MaterialEdit(); changed = true; }
+
                     var overlayIds = new HashSet<string>();
                     foreach (var overlay in variant.edit.overlays)
                     {
@@ -234,14 +267,19 @@ namespace TsiYuki.Materials
                             changed = true;
                         }
                     }
-                    if (variant.value <= 0) { variant.value = target.nextValue++; changed = true; }
                 }
-                if (target.nextValue <= 0) { target.nextValue = 1; changed = true; }
+
+                // A look that was deleted must not leave the slot pointing at it.
+                if (!string.IsNullOrEmpty(target.baseVariant) && target.Find(target.baseVariant) == null)
+                {
+                    target.baseVariant = MaterialVariant.Original;
+                    changed = true;
+                }
             }
             return changed;
         }
 
-        public static string NewId() => Guid.NewGuid().ToString("N").Substring(0, 6);
+        public static string NewId() { return Guid.NewGuid().ToString("N").Substring(0, 6); }
 
         static string Unique(HashSet<string> used)
         {

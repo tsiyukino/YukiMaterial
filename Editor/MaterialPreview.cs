@@ -9,7 +9,7 @@ using UnityEngine;
 namespace TsiYuki.Materials.Editor
 {
     /// <summary>
-    /// Shows material edits in the Scene and Game views without building: NDMF
+    /// Shows material looks in the Scene and Game views without building: NDMF
     /// renders proxy copies of the renderers and this filter gives the proxies
     /// patched materials. Toggle it from NDMF's preview menu.
     /// </summary>
@@ -25,34 +25,40 @@ namespace TsiYuki.Materials.Editor
 
         public bool IsEnabled(ComputeContext context) => context.Observe(Toggle.IsEnabled);
 
-        /// <summary>
-        /// The version the Scene view should show for one slot, or null when
-        /// there is nothing to show.
-        ///
-        /// A component that applies its change permanently previews it as soon
-        /// as it is set up — there is only one answer, so asking would be
-        /// pointless. A component whose versions become a menu previews the one
-        /// the avatar spawns with, and only shows another when Try on says so.
-        /// </summary>
-        internal static MaterialVariant Shows(YukiMaterial config, MaterialTarget target)
+        /// <summary>Every menu on the same avatar as this catalogue.</summary>
+        internal static List<YukiMaterialMenu> MenusFor(YukiMaterial config)
         {
-            if (target == null || target.variants.Count == 0) return null;
+            var list = new List<YukiMaterialMenu>();
+            if (config == null) return list;
+            var root = nadena.dev.ndmf.runtime.RuntimeUtil.FindAvatarInParents(config.transform);
+            var scope = root != null ? root.gameObject : config.gameObject;
+            foreach (var menu in scope.GetComponentsInChildren<YukiMaterialMenu>(true))
+                if (menu != null) list.Add(menu);
+            return list;
+        }
 
-            if (!config.asMenu)
+        /// <summary>
+        /// The look the Scene view should show for one slot, or null when the
+        /// slot is left as it is.
+        /// </summary>
+        internal static MaterialVariant Shows(YukiMaterial config, MaterialTarget target, List<YukiMaterialMenu> menus)
+        {
+            if (config == null || target == null) return null;
+
+            var key = YukiMaterialMenu.KeyOf(config, target.id);
+            var menu = menus != null ? menus.FirstOrDefault(m => m != null && m.FindSlot(key) != null) : null;
+
+            MaterialVariant variant;
+            if (menu == null)
             {
-                var only = target.First;
-                return only != null && only.edit != null && !only.edit.IsEmpty ? only : null;
+                variant = target.Find(target.baseVariant);
             }
-
-            var chosenId = MaterialPreviewState.Current(config, target);
-            var variant = chosenId != null
-                ? target.variants.FirstOrDefault(v => v != null && v.id == chosenId)
-                : null;
-            if (variant == null)
-                variant = target.variants.FirstOrDefault(v => v != null && v.id == target.defaultVariant)
-                          ?? target.First;
-
-            return variant != null && variant.edit != null && !variant.edit.IsEmpty ? variant : null;
+            else
+            {
+                var state = MaterialPreviewState.Current(menu) ?? menu.Default;
+                variant = state != null ? target.Find(state.Wears(key)) : null;
+            }
+            return variant != null && variant.Changes ? variant : null;
         }
 
         public ImmutableList<RenderGroup> GetTargetGroups(ComputeContext context)
@@ -60,16 +66,20 @@ namespace TsiYuki.Materials.Editor
             var groups = ImmutableList.CreateBuilder<RenderGroup>();
             foreach (var root in context.GetAvatarRoots())
             {
+                // Re-run whenever a menu changes, or Try on points elsewhere:
+                // what a slot wears is decided over there now.
+                foreach (var menu in context.GetComponentsInChildren<YukiMaterialMenu>(root, true))
+                    if (menu != null) context.Observe(menu, m => JsonUtility.ToJson(m), (a, b) => a == b);
+                MaterialPreviewState.Observe(context);
+
                 foreach (var component in context.GetComponentsInChildren<YukiMaterial>(root, true))
                 {
                     if (component == null) continue;
-                    // Re-run whenever any field of the component changes, or when
-                    // Try on points at a different version.
                     context.Observe(component, c => JsonUtility.ToJson(c), (a, b) => a == b);
-                    MaterialPreviewState.Observe(context);
 
+                    var menus = MenusFor(component);
                     var renderers = component.targets
-                        .Where(t => t != null && t.renderer != null && Shows(component, t) != null)
+                        .Where(t => t != null && t.renderer != null && Shows(component, t, menus) != null)
                         .Select(t => t.renderer)
                         .Distinct()
                         .ToList();
@@ -106,13 +116,14 @@ namespace TsiYuki.Materials.Editor
             public void Prepare(YukiMaterial component, Renderer original, Renderer proxy)
             {
                 if (proxy == null || component == null) return;
+                var menus = MenusFor(component);
                 var materials = proxy.sharedMaterials;
                 bool any = false;
 
                 foreach (var target in component.targets)
                 {
                     if (target == null || target.renderer != original) continue;
-                    var variant = Shows(component, target);
+                    var variant = Shows(component, target, menus);
                     if (variant == null) continue;
                     if (target.slot < 0 || target.slot >= materials.Length) continue;
                     var source = materials[target.slot];

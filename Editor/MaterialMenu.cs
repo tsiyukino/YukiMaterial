@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -6,7 +5,7 @@ using VRC.SDK3.Avatars.Components;
 namespace TsiYuki.Materials.Editor
 {
     // Hierarchy right-click: GameObject > TsiYuki > Edit Materials.
-    // The component itself is also under Add Component > TsiYuki > Yuki Material.
+    // The components are also under Add Component > TsiYuki.
     static class MaterialMenu
     {
         const string Path = "GameObject/TsiYuki/Edit Materials";
@@ -28,15 +27,11 @@ namespace TsiYuki.Materials.Editor
             YukiMaterial last = null;
             foreach (var go in objects)
             {
-                var config = go.GetComponent<YukiMaterial>();
-                if (config == null)
-                {
-                    config = Undo.AddComponent<YukiMaterial>(go);
-                    config.EnsureIds();
-                    // A component added straight onto a mesh is meant for that
-                    // mesh, so fill the slots instead of leaving an empty list.
+                var config = MaterialActions.CatalogueFor(go);
+                // A component added straight onto a mesh is meant for that mesh,
+                // so fill the slots instead of leaving an empty list.
+                if (config.targets.Count == 0)
                     MaterialActions.FillFrom(config, go, go.GetComponent<Renderer>() == null);
-                }
                 last = config;
             }
 

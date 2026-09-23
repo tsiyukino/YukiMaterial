@@ -1,9 +1,9 @@
 {
   "name": "moe.tsiyuki.material",
   "displayName": "Yuki Material",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "unity": "2022.3",
-  "description": "Non-destructive material editing for VRChat avatars: change a material through its own shader inspector and have the change applied at build time through NDMF, without duplicating the material asset into your project.",
+  "description": "Non-destructive material editing for VRChat avatars: give a material slot several looks, and switch between them from one menu that reaches across objects — the hair and the ears at once. Applied at build time through NDMF, without duplicating the material asset into your project.",
   "author": {
     "name": "TsiYuki",
     "url": "https://github.com/tsiyukino"

@@ -1,41 +1,46 @@
 # Changelog
 
-## [0.1.0] - 2026-09-22
+## [0.2.0] - 2026-09-22
+
+Rebuilt around two ideas: a component says what one object's materials **can** look like, and a menu
+says **when** they look like it. They are separate because the interesting cases cross objects — the hair
+and the ears turning pink together — and an object's own component can never reach another object.
 
 ### Added
-- **Install into**: which menu this appears in, instead of always the avatar's root menu. Takes a menu asset,
-  an object carrying a Modular Avatar menu item, or another TsiYuki menu — a makeup menu can live inside the
-  wardrobe's. Whichever tool runs first, the placement is settled afterwards by TsiYuki Core, and a loop is
-  reported instead of being followed.
-- **Versions and a menu.** A material slot can hold several versions — the same face with several makeups —
-  and turning on "Make a menu" gives each slot a submenu that switches them in game. One synced int per
-  slot; the versions are whole materials swapped by the animator, so nothing is asked of the shader and a
-  locked Poiyomi material works too. One slot flattens the submenu away.
-- The two kinds of component preview differently, on purpose. A permanent change shows in the Scene view as
-  soon as it is set up, since there is only one answer. A menu shows the version the avatar spawns with and
-  switches only when you click Try on, the way the wardrobe does.
-- **Overlay mode.** Drop images onto the drop area and each is merged into the material's own texture at
-  build time, the way you would flatten a PSD layer onto the base — which is what texture and makeup packs
-  normally ask you to do by hand in an image editor. No shader feature is used for the merge, so it works
-  with any shader and survives later conversions. Each layer shows its image and needs only two settings
-  (where it goes, opacity); blend mode, mask, tint, scale, offset and an explicit texture property sit
-  behind Advanced, and every one of them defaults to changing nothing.
-- The composited result is shown in the inspector, per target, so the effect is visible without hunting for
-  it in the Scene view. The shader's own inspector is folded away by default, since it is the advanced path
-  and is hundreds of rows tall.
-- Where a dropped image goes is guessed from the image: marks on a black field become a glow layer added to
-  emission, anything else is merged into the base colour. A glow layer switches emission on if the material
-  had it off, and says so.
-- A warning when an overlay's shape does not match the texture it is merged into, since overlays are drawn
-  for one UV layout.
-- **Override mode.** Edit any material through its own shader inspector (lilToon, Poiyomi and anything
-  else with a custom `ShaderGUI`) and keep only the difference from the original. The change is applied
-  to a copy at build time through NDMF: the material asset is untouched and nothing is written into
-  `Assets/`.
-- Targets are a list of renderer + material slot. A component added to an object fills the list from
-  that object's own renderers; rows you do not want are deleted by hand.
-- Scene view preview through NDMF, so an edit is visible without building.
-- Errors when two components claim the same renderer and slot.
-- Added from the Inspector's **Add Component > TsiYuki > Yuki Material**, or by right-clicking an
-  object in the Hierarchy and choosing **TsiYuki > Edit Materials**, which also fills the target list.
-- English, Chinese and Japanese UI (TsiYuki > Language).
+- **Menus are their own component.** `Yuki Material Menu`, usually on the avatar root, refers to material
+  slots wherever they live and switches them together. One menu is one synced int and one submenu,
+  however many slots on however many objects it moves.
+- **The table.** A menu's states run down it and the slots it drives run across; each cell says what that
+  slot wears in that state. "Pink" is one row that says what the hair wears and what the ears wear — which
+  no inspector could ever show, because the two live on different objects.
+- **The material a slot already has is always a choice**, in every cell, without being stored as anything.
+  It is what a state that is not about a slot means, and it is the way back once a menu has switched away
+  from what the avatar shipped with.
+- **The panel is where the work happens.** Editing a material, making looks, wiring them into menus,
+  naming things, install-into, the parameter and what it costs: all of it is on one screen, with the
+  avatar's objects and menus listed down the side.
+- Adding a slot to a menu offers every material slot on the avatar, set up or not; one that is not set up
+  is set up as it is added. Nothing has to be prepared on the other object first.
+- A look can be made from inside the table: the last entry in every cell makes one and wears it.
+- **Drag instead of picking from a list.** An object dragged in from the Hierarchy is set up where it
+  lands: on the list it becomes a catalogue, on a menu's table it becomes columns for every slot it has
+  going spare. A slot dragged out of the list onto a table joins that menu. The bar that takes the drop
+  is also the button that opens the list, for when dragging is the longer way round.
+- Try on switches the whole menu in the Scene view, so both halves of "hair and ears" move at once.
+- **The difference shows its values.** What the material had and what the look puts there instead, side by
+  side: thumbnails for textures, swatches for colours (with the HDR multiplier and alpha spelled out),
+  numbers for the rest. Two textures that share a file name and are different files — the usual result of
+  an avatar having been duplicated — show enough of their paths to tell them apart, which a list of
+  property names hid completely.
+
+### Changed
+- **The component inspectors are now summaries.** A catalogue lists its slots, a menu lists its states and
+  the slots it drives; both open the panel. Nothing is edited from the Inspector any more.
+- A slot with no menu on it wears whichever look is set as its own, applied on upload. That replaces the
+  old "apply permanently" mode of the component, and it is now a per-slot choice rather than a per-object
+  one.
+- Two components on one slot, or two menus on one slot, are reported rather than resolved.
+
+### Removed
+- Versions, groups and the "make a menu" switch on `Yuki Material`. Switching lives in the menu component,
+  and grouping is what a menu's columns are. Configurations from 0.1.0 are not carried over.

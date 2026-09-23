@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -7,62 +6,65 @@ using UnityEngine;
 namespace TsiYuki.Materials.Editor
 {
     /// <summary>
-    /// The FX controller that switches material versions: one layer per slot,
-    /// one state per version, each state swapping the renderer's material.
+    /// The FX layer that switches one menu's states: one state of the machine
+    /// per state of the menu, each swapping the material of every slot the menu
+    /// drives — however many objects those slots are spread across.
     ///
-    /// Every state writes the one property its layer touches, so write-defaults
-    /// off is safe and either convention works.
+    /// Every state writes every slot, so write-defaults off is safe and either
+    /// convention works.
     /// </summary>
     public static class MaterialAnimatorBuilder
     {
-        public static AnimatorController Build(IEnumerable<ResolvedTarget> targets, Transform avatarRoot,
-                                               Func<ResolvedTarget, MaterialVariant, UnityEngine.Material> materialFor,
+        public static AnimatorController Build(ResolvedMenu menu, Transform avatarRoot,
+                                               Func<ResolvedSlot, ResolvedState, UnityEngine.Material> materialFor,
                                                string name, Action<UnityEngine.Object> persist)
         {
             var controller = new AnimatorController { name = name };
             persist(controller);
+            controller.AddParameter(menu.ParameterName, AnimatorControllerParameterType.Int);
 
-            foreach (var target in targets)
+            var machine = new AnimatorStateMachine { name = menu.ParameterName, hideFlags = HideFlags.HideInHierarchy };
+            persist(machine);
+            controller.AddLayer(new AnimatorControllerLayer
             {
-                controller.AddParameter(target.ParameterName, AnimatorControllerParameterType.Int);
+                name = menu.ParameterName,
+                defaultWeight = 1,
+                stateMachine = machine,
+            });
 
-                var machine = AddLayer(controller, target.ParameterName, persist);
-                var path = AnimationUtility.CalculateTransformPath(target.Renderer.transform, avatarRoot);
-                int y = 0;
+            int y = 0;
+            foreach (var state in menu.States)
+            {
+                var clip = new AnimationClip { name = name + " " + state.Value };
+                bool any = false;
 
-                foreach (var variant in target.Variants)
+                foreach (var slot in menu.Slots)
                 {
-                    var material = materialFor(target, variant);
+                    var material = materialFor(slot, state);
                     if (material == null) continue;
 
-                    var clip = new AnimationClip { name = name + " " + target.DisplayName + " " + variant.value };
+                    var path = AnimationUtility.CalculateTransformPath(slot.Renderer.transform, avatarRoot);
                     AnimationUtility.SetObjectReferenceCurve(clip,
-                        EditorCurveBinding.PPtrCurve(path, target.Renderer.GetType(), "m_Materials.Array.data[" + target.Slot + "]"),
+                        EditorCurveBinding.PPtrCurve(path, slot.Renderer.GetType(), "m_Materials.Array.data[" + slot.Slot + "]"),
                         new[] { new ObjectReferenceKeyframe { time = 0, value = material } });
-                    persist(clip);
+                    any = true;
+                }
+                if (!any) continue;
+                persist(clip);
 
-                    var state = AddState(machine, variant.value.ToString(), clip, new Vector3(400, y), persist);
-                    y += 60;
+                var node = AddState(machine, state.Value.ToString(), clip, new Vector3(400, y), persist);
+                y += 60;
 
-                    AddEnter(machine, state, variant.value, target.ParameterName, persist);
-                    if (variant == target.Default)
-                    {
-                        // 0 is what VRChat resets a parameter to, so it has to
-                        // mean the version the avatar spawns with.
-                        machine.defaultState = state;
-                        AddEnter(machine, state, 0, target.ParameterName, persist);
-                    }
+                AddEnter(machine, node, state.Value, menu.ParameterName, persist);
+                if (state == menu.Default)
+                {
+                    // 0 is what VRChat resets a parameter to, so it has to mean
+                    // the state the avatar spawns in.
+                    machine.defaultState = node;
+                    AddEnter(machine, node, 0, menu.ParameterName, persist);
                 }
             }
             return controller;
-        }
-
-        static AnimatorStateMachine AddLayer(AnimatorController controller, string name, Action<UnityEngine.Object> persist)
-        {
-            var machine = new AnimatorStateMachine { name = name, hideFlags = HideFlags.HideInHierarchy };
-            persist(machine);
-            controller.AddLayer(new AnimatorControllerLayer { name = name, defaultWeight = 1, stateMachine = machine });
-            return machine;
         }
 
         static AnimatorState AddState(AnimatorStateMachine machine, string name, Motion motion, Vector3 position, Action<UnityEngine.Object> persist)
