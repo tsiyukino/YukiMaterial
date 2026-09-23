@@ -18,6 +18,9 @@ namespace TsiYuki.Materials.Editor
     {
         const string Key = "moe.tsiyuki.material/slot";
 
+        /// <summary>The bar's height, so a button beside it can match.</summary>
+        public const float BarHeight = 28f;
+
         struct Payload
         {
             public YukiMaterial Config;
@@ -100,7 +103,7 @@ namespace TsiYuki.Materials.Editor
                                params GUILayoutOption[] options)
         {
             dropped = null;
-            var rect = GUILayoutUtility.GetRect(0, 30, options);
+            var rect = GUILayoutUtility.GetRect(0, BarHeight, options);
             var e = Event.current;
             bool hover = rect.Contains(e.mousePosition);
 

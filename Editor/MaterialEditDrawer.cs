@@ -140,12 +140,13 @@ namespace TsiYuki.Materials.Editor
             // up looking as though it has no way to change anything.
             DrawOverlays();
 
-            EditorGUILayout.Space(4);
+            EditorGUILayout.Space(MaterialWindow.Block * 2);
             _shaderOpen = EditorGUILayout.Foldout(_shaderOpen, L["ui.edit_material"], true, EditorStyles.foldoutHeader);
             if (_shaderOpen)
             {
+                EditorGUILayout.Space(2);
                 EditorGUILayout.LabelField(L["ui.edit_material.help"], YukiGUI.WrapMini);
-                EditorGUILayout.Space(4);
+                EditorGUILayout.Space(MaterialWindow.Block);
                 try
                 {
                     _panel.OnInspectorGUI();
@@ -158,7 +159,7 @@ namespace TsiYuki.Materials.Editor
 
             // The difference is the record of what was done, so it reads after
             // the doing — and folded, because it can run to dozens of rows.
-            EditorGUILayout.Space(6);
+            EditorGUILayout.Space(MaterialWindow.Block * 2);
             DrawChanges();
 
             if (Event.current.type == EventType.Repaint) Capture();
@@ -176,7 +177,7 @@ namespace TsiYuki.Materials.Editor
             _changesOpen = EditorGUILayout.Foldout(_changesOpen, L.Tr("ui.changed_list_n", edit.Count), true, EditorStyles.foldoutHeader);
             if (!_changesOpen) return;
 
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            using (new EditorGUILayout.VerticalScope(MaterialWindow.Styles.Card))
             {
                 EditorGUILayout.LabelField(L["ui.changed_list.help"], YukiGUI.WrapMini);
                 foreach (var property in edit.properties.ToList())
@@ -329,15 +330,14 @@ namespace TsiYuki.Materials.Editor
         {
             var overlays = _variant.edit.overlays;
 
-            YukiGUI.Section(L["ui.overlays"]);
-            EditorGUILayout.LabelField(L["ui.overlays.help"], YukiGUI.WrapMini);
-            EditorGUILayout.Space(2);
+            MaterialWindow.Heading(L["ui.overlays"], L["ui.overlays.help"]);
 
             DrawResult(_variant.edit);
             DrawDropZone();
+            EditorGUILayout.Space(MaterialWindow.Block);
 
             if (overlays.Count == 0) return;
-            if (overlays.Count > 1) EditorGUILayout.LabelField(L["ui.overlay.order"], EditorStyles.miniLabel);
+            if (overlays.Count > 1) { EditorGUILayout.LabelField(L["ui.overlay.order"], YukiGUI.WrapMini); EditorGUILayout.Space(MaterialWindow.Gap); }
 
             OverlayLayer remove = null, moving = null;
             int move = 0;
@@ -345,7 +345,7 @@ namespace TsiYuki.Materials.Editor
             foreach (var layer in overlays.ToList())
             {
                 if (layer == null) continue;
-                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                using (new EditorGUILayout.VerticalScope(MaterialWindow.Styles.Card))
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Editor window: one spacing scale throughout, with padding at the edges; the list
+  on the left sits on its own ground with a divider between it and the detail.
+- Editor window: list rows are all one height, selection is a highlight rather
+  than a box, and the counts line up on the right.
+- Editor window: each pane opens with a title, a line saying where it lives,
+  and its actions at the right; sections have room above them.
+- Editor window: the state table has a header strip and alternating rows, and is
+  tall enough for its rows without a scrollbar of its own.
+- Editor window: look and state icons are a small picture you click or drop a
+  texture on, instead of a field too narrow to read.
+
 ## [0.2.0] - 2026-09-22
 
 Rebuilt around two ideas: a component says what one object's materials **can** look like, and a menu
