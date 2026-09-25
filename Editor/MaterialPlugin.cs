@@ -48,9 +48,9 @@ namespace TsiYuki.Materials.Editor
 
             var set = MaterialSet.Resolve(ctx.AvatarRootTransform);
             foreach (var warning in set.Warnings)
-                Report(ErrorSeverity.NonFatal, warning.Key, warning.Context, warning.Args);
+                MaterialText.Errors.Report(ErrorSeverity.NonFatal, warning.Key, warning.Context, warning.Args);
             foreach (var error in set.Errors)
-                Report(ErrorSeverity.Error, error.Key, error.Context, error.Args);
+                MaterialText.Errors.Report(ErrorSeverity.Error, error.Key, error.Context, error.Args);
 
             // Textures and materials made here are handed to NDMF, so the baker
             // must not own them; it is deliberately never disposed.
@@ -152,10 +152,10 @@ namespace TsiYuki.Materials.Editor
             if (patched == null) return null;
 
             foreach (var name in missing.Distinct())
-                Report(ErrorSeverity.NonFatal, "warn.missing_property", slot.Original, new object[] { label, name });
+                MaterialText.Errors.Report(ErrorSeverity.NonFatal, "warn.missing_property", slot.Original, new object[] { label, name });
 
             OverlayBaker.Apply(patched, variant.edit, baker, label,
-                (key, args) => Report(key.StartsWith("info.") ? ErrorSeverity.Information : ErrorSeverity.NonFatal, key, slot.Original, args));
+                (key, args) => MaterialText.Errors.Report(key.StartsWith("info.") ? ErrorSeverity.Information : ErrorSeverity.NonFatal, key, slot.Original, args));
 
             ctx.AssetSaver.SaveAsset(patched);
             return patched;
@@ -202,16 +202,7 @@ namespace TsiYuki.Materials.Editor
 
             var menuRoot = MaterialMenuGenerator.Build(menu, host.transform);
             MenuPlacement.Place(menu.Config, menu.Config.menuParent, menuRoot, menu.DisplayName,
-                (key, args) => Report(ErrorSeverity.NonFatal, key, menu.Config, args));
-        }
-
-        static void Report(ErrorSeverity severity, string key, Object context, object[] args)
-        {
-            // Strings fill the message; a trailing Unity object becomes a
-            // clickable reference in NDMF's error window.
-            var all = (args ?? new object[0]).Select(a => (object)(a?.ToString() ?? "")).ToList();
-            if (context != null) all.Add(context);
-            ErrorReport.ReportError(MaterialText.Ndmf, severity, key, all.ToArray());
+                (key, args) => MaterialText.Errors.Report(ErrorSeverity.NonFatal, key, menu.Config, args));
         }
     }
 }
