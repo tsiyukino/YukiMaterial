@@ -1,4 +1,5 @@
 using System;
+using TsiYuki.Core.Editor;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -23,14 +24,7 @@ namespace TsiYuki.Materials.Editor
             persist(controller);
             controller.AddParameter(menu.ParameterName, AnimatorControllerParameterType.Int);
 
-            var machine = new AnimatorStateMachine { name = menu.ParameterName, hideFlags = HideFlags.HideInHierarchy };
-            persist(machine);
-            controller.AddLayer(new AnimatorControllerLayer
-            {
-                name = menu.ParameterName,
-                defaultWeight = 1,
-                stateMachine = machine,
-            });
+            var machine = AnimatorGraph.AddLayer(controller, menu.ParameterName, persist);
 
             int y = 0;
             foreach (var state in menu.States)
@@ -52,37 +46,19 @@ namespace TsiYuki.Materials.Editor
                 if (!any) continue;
                 persist(clip);
 
-                var node = AddState(machine, state.Value.ToString(), clip, new Vector3(400, y), persist);
+                var node = AnimatorGraph.AddState(machine, state.Value.ToString(), clip, new Vector3(400, y), persist);
                 y += 60;
 
-                AddEnter(machine, node, state.Value, menu.ParameterName, persist);
+                AnimatorGraph.AddAnyStateTransition(machine, node, menu.ParameterName, state.Value, persist);
                 if (state == menu.Default)
                 {
                     // 0 is what VRChat resets a parameter to, so it has to mean
                     // the state the avatar spawns in.
                     machine.defaultState = node;
-                    AddEnter(machine, node, 0, menu.ParameterName, persist);
+                    AnimatorGraph.AddAnyStateTransition(machine, node, menu.ParameterName, 0, persist);
                 }
             }
             return controller;
-        }
-
-        static AnimatorState AddState(AnimatorStateMachine machine, string name, Motion motion, Vector3 position, Action<UnityEngine.Object> persist)
-        {
-            var state = new AnimatorState { name = name, motion = motion, writeDefaultValues = false, hideFlags = HideFlags.HideInHierarchy };
-            persist(state);
-            machine.AddState(state, position);
-            return state;
-        }
-
-        static void AddEnter(AnimatorStateMachine machine, AnimatorState state, int value, string parameter, Action<UnityEngine.Object> persist)
-        {
-            var transition = machine.AddAnyStateTransition(state);
-            transition.canTransitionToSelf = false;
-            transition.hasExitTime = false;
-            transition.duration = 0;
-            transition.AddCondition(AnimatorConditionMode.Equals, value, parameter);
-            persist(transition);
         }
     }
 }

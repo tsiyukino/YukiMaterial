@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Undo-safe editing and the FX layer's states and entry transitions now come from TsiYuki Core 0.4.0
+  instead of this package's own copies. The generated controller is the same. Requires TsiYuki Core 0.4.0.
 - Editor window: one spacing scale throughout, with padding at the edges; the list
   on the left sits on its own ground with a divider between it and the detail.
 - Editor window: list rows are all one height, selection is a highlight rather

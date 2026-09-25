@@ -1,7 +1,7 @@
 {
   "name": "moe.tsiyuki.material",
   "displayName": "Yuki Material",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "unity": "2022.3",
   "description": "Non-destructive material editing for VRChat avatars: give a material slot several looks, and switch between them from one menu that reaches across objects — the hair and the ears at once. Applied at build time through NDMF, without duplicating the material asset into your project.",
   "author": {
@@ -15,7 +15,7 @@
     "com.vrchat.avatars": ">=3.7.0",
     "nadena.dev.ndmf": ">=1.11.0 <2.0.0",
     "nadena.dev.modular-avatar": ">=1.12.0 <2.0.0",
-    "moe.tsiyuki.core": ">=0.3.0"
+    "moe.tsiyuki.core": ">=0.4.0"
   },
   "keywords": [
     "vrchat",
