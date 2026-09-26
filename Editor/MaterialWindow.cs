@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TsiYuki.Core.Editor;
+using TsiYuki.Core.Menus.Editor;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -568,7 +569,7 @@ namespace TsiYuki.Materials.Editor
                 var icon = (Texture2D)EditorGUILayout.ObjectField(L["ui.icon"], menu.icon, typeof(Texture2D), false,
                                                                   GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 var saved = EditorGUILayout.Toggle(new GUIContent(L["ui.saved"], L["ui.saved.tip"]), menu.saved);
-                var parent = EditorGUILayout.ObjectField(new GUIContent(L["ui.menu_parent"], L["ui.menu_parent.tip"]), menu.menuParent, typeof(Object), true);
+                var parent = MenuParentField.Draw(menu.menuParent);
                 if (EditorGUI.EndChangeCheck())
                 {
                     UndoEdit.Begin(menu, "Edit menu");

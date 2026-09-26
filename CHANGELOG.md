@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Install into** another TsiYuki menu now also works when it holds the object carrying that menu, which is
+  what dragging it from the Hierarchy gives. The field and its explanation come from TsiYuki Core Menus, the same
+  as in Yuki Wardrobe; its Japanese and Chinese labels change to match.
 - Undo-safe editing and the FX layer's states and entry transitions now come from TsiYuki Core 0.4.0
   instead of this package's own copies. The generated controller is the same. Requires TsiYuki Core 0.4.0.
 - Build warnings and errors are reported to NDMF through TsiYuki Core's `YukiNdmfReport`. The messages are

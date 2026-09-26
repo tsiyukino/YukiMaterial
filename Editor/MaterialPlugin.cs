@@ -33,7 +33,7 @@ namespace TsiYuki.Materials.Editor
             InPhase(BuildPhase.Generating)
                 // TsiYuki Core Menus settles menu placement once every TsiYuki tool has run,
                 // so this has to be done by then.
-                .BeforePlugin("moe.tsiyuki.core.menus")
+                .BeforePlugin<MenusPlugin>()
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("Apply material edits", Execute)
                 // NDMF only runs a filter a pass asks for; without this the
