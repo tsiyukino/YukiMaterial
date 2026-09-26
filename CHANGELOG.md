@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.2.1] - 2026-09-26
 
 - **Install into** another TsiYuki menu now also works when it holds the object carrying that menu, which is
   what dragging it from the Hierarchy gives. The field and its explanation come from TsiYuki Core Menus, the same
