@@ -164,9 +164,6 @@ info.emission_enabled = {0}：自发光原本是关的，为了让自发光图�
 warn.menu_no_slots = {0}：这个菜单没有引用任何材质插槽，不会生成任何东西。
 warn.menu_one_state = {0}：菜单至少要有两个状态才谈得上切换，不会生成任何东西。
 warn.menu_changes_nothing = {0}：每个状态都让所有插槽保持原样，不会生成任何东西。
-warn.menu_parent_missing = {0}：{1} 自己不生成菜单，因此这个菜单留在根菜单里。
-warn.menu_cycle = {0}：装进 {1} 会让菜单装进它自己，因此这个菜单留在根菜单里。
-warn.no_install_target = {0}：这个版本的 Modular Avatar 没有 Menu Install Target，菜单留在根菜单里。
 conflict.two_components = {0} 的插槽 {1} 被不止一个 Yuki Material 组件占用（{2}）。
 conflict.two_menus = {0} 的 {1} 被不止一个菜单驱动（{2}）。一个插槽只能听一个菜单的。
 

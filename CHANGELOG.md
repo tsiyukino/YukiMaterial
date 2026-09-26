@@ -6,6 +6,10 @@
   instead of this package's own copies. The generated controller is the same. Requires TsiYuki Core 0.4.0.
 - Build warnings and errors are reported to NDMF through TsiYuki Core's `YukiNdmfReport`. The messages are
   unchanged.
+- Texture compositing comes from TsiYuki Core Texture, the FX layer's states from TsiYuki Core Animation, and
+  the menu's items and its placement from TsiYuki Core Menus. Generated menus, controllers and textures are
+  unchanged. The three placement warnings are now TsiYuki Core Menus' own, so their Japanese and Chinese
+  wording matches Yuki Wardrobe's.
 - Editor window: one spacing scale throughout, with padding at the edges; the list
   on the left sits on its own ground with a divider between it and the detail.
 - Editor window: list rows are all one height, selection is a highlight rather

@@ -1,4 +1,4 @@
-using nadena.dev.modular_avatar.core;
+using TsiYuki.Core.Menus.Editor;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
@@ -16,47 +16,11 @@ namespace TsiYuki.Materials.Editor
     {
         public static GameObject Build(ResolvedMenu menu, Transform host)
         {
-            var root = new GameObject(menu.DisplayName);
-            root.transform.SetParent(host, false);
-            root.AddComponent<ModularAvatarMenuInstaller>();
-            SubMenu(root, menu.DisplayName, menu.Icon);
-
+            var root = MenuItems.Root(host, menu.DisplayName, menu.Icon);
             foreach (var state in menu.States)
-                Item(root.transform, state.DisplayName, state.Icon, menu.ParameterName, state.Value);
-
+                MenuItems.Control(root.transform, state.DisplayName, state.Icon,
+                                  VRCExpressionsMenu.Control.ControlType.Toggle, menu.ParameterName, state.Value);
             return root;
-        }
-
-        static void SubMenu(GameObject go, string label, Texture2D icon)
-        {
-            var item = go.AddComponent<ModularAvatarMenuItem>();
-            item.Control = new VRCExpressionsMenu.Control
-            {
-                name = label,
-                icon = icon,
-                type = VRCExpressionsMenu.Control.ControlType.SubMenu,
-                parameter = new VRCExpressionsMenu.Control.Parameter { name = "" },
-            };
-            item.MenuSource = SubmenuSource.Children;
-            item.label = label;
-            item.automaticValue = false;
-        }
-
-        static void Item(Transform parent, string label, Texture2D icon, string parameter, float value)
-        {
-            var go = new GameObject(label);
-            go.transform.SetParent(parent, false);
-            var item = go.AddComponent<ModularAvatarMenuItem>();
-            item.Control = new VRCExpressionsMenu.Control
-            {
-                name = label,
-                icon = icon,
-                type = VRCExpressionsMenu.Control.ControlType.Toggle,
-                parameter = new VRCExpressionsMenu.Control.Parameter { name = parameter },
-                value = value,
-            };
-            item.label = label;
-            item.automaticValue = false;
         }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using TsiYuki.Core.Editor;
+using TsiYuki.Core.Animations.Editor;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;

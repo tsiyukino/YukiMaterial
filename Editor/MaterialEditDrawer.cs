@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TsiYuki.Core.Editor;
+using TsiYuki.Core.Textures.Editor;
 using UnityEditor;
 using UnityEngine;
 

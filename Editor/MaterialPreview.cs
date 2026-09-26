@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using nadena.dev.ndmf.preview;
 using TsiYuki.Core.Editor;
+using TsiYuki.Core.Textures.Editor;
 using UnityEngine;
 
 namespace TsiYuki.Materials.Editor

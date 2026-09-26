@@ -164,9 +164,6 @@ info.emission_enabled = {0}: 発光がオフだったため、発光レイヤー
 warn.menu_no_slots = {0}: このメニューはマテリアルスロットを 1 つも参照していないため、何も生成しません。
 warn.menu_one_state = {0}: メニューには切り替える意味のある状態が 2 つ以上必要なため、何も生成しません。
 warn.menu_changes_nothing = {0}: どの状態もすべてのスロットをそのままにしているため、何も生成しません。
-warn.menu_parent_missing = {0}: {1} は自分のメニューを作らないため、ルートメニューのままにします。
-warn.menu_cycle = {0}: {1} に入れるとメニューが自分自身の中に入ってしまうため、ルートメニューのままにします。
-warn.no_install_target = {0}: この Modular Avatar には Menu Install Target が無いため、メニューはルートメニューのままです。
 conflict.two_components = {0} のスロット {1} を複数の Yuki Material コンポーネントが持っています（{2}）。
 conflict.two_menus = {0} の {1} を複数のメニューが動かしています（{2}）。スロットが従えるメニューは 1 つだけです。
 

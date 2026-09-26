@@ -4,6 +4,9 @@
     "references": [
         "TsiYuki.Materials",
         "TsiYuki.Core.Editor",
+        "TsiYuki.Core.Animations.Editor",
+        "TsiYuki.Core.Textures.Editor",
+        "TsiYuki.Core.Menus.Editor",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
         "nadena.dev.ndmf.vrchat",

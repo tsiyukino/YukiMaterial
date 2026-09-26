@@ -164,9 +164,6 @@ info.emission_enabled = {0}: glow was switched off, so {1} was turned on for the
 warn.menu_no_slots = {0}: this menu drives no material slots, so nothing is built for it.
 warn.menu_one_state = {0}: a menu needs at least two states to be worth switching between, so nothing is built for it.
 warn.menu_changes_nothing = {0}: every state leaves every slot as it is, so nothing is built for it.
-warn.menu_parent_missing = {0}: {1} makes no menu of its own, so this stays in the root menu.
-warn.menu_cycle = {0}: installing into {1} would put a menu inside itself, so this stays in the root menu.
-warn.no_install_target = {0}: this Modular Avatar version has no Menu Install Target, so the menu stays in the root menu.
 conflict.two_components = {0} slot {1} is held by more than one Yuki Material component ({2}).
 conflict.two_menus = {0}'s {1} is driven by more than one menu ({2}). A slot can only answer to one.
 

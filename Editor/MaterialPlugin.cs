@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
-using TsiYuki.Core.Editor;
+using TsiYuki.Core.Menus.Editor;
+using TsiYuki.Core.Textures.Editor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -32,7 +33,7 @@ namespace TsiYuki.Materials.Editor
             InPhase(BuildPhase.Generating)
                 // Core settles menu placement once every TsiYuki tool has run,
                 // so this has to be done by then.
-                .BeforePlugin("moe.tsiyuki.core")
+                .BeforePlugin("moe.tsiyuki.core.menus")
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("Apply material edits", Execute)
                 // NDMF only runs a filter a pass asks for; without this the
@@ -201,8 +202,7 @@ namespace TsiYuki.Materials.Editor
             };
 
             var menuRoot = MaterialMenuGenerator.Build(menu, host.transform);
-            MenuPlacement.Place(menu.Config, menu.Config.menuParent, menuRoot, menu.DisplayName,
-                (key, args) => MaterialText.Errors.Report(ErrorSeverity.NonFatal, key, menu.Config, args));
+            MenuPlacement.Place(menu.Config, menu.Config.menuParent, menuRoot, menu.DisplayName);
         }
     }
 }
