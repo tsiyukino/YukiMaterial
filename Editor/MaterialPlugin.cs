@@ -31,7 +31,7 @@ namespace TsiYuki.Materials.Editor
         protected override void Configure()
         {
             InPhase(BuildPhase.Generating)
-                // Core settles menu placement once every TsiYuki tool has run,
+                // TsiYuki Core Menus settles menu placement once every TsiYuki tool has run,
                 // so this has to be done by then.
                 .BeforePlugin("moe.tsiyuki.core.menus")
                 .BeforePlugin("nadena.dev.modular-avatar")
